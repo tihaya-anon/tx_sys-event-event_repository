@@ -1,0 +1,45 @@
+syntax = "proto3";
+import "kafka.proto";
+package event_repository;
+
+message CreateEventReq {
+  kafka.Event event = 1;
+}
+
+message CreateEventResp {
+  string event_id = 1;
+}
+
+message RetryingEventReq {
+  string event_id = 1;
+}
+
+message RetryingEventResp {}
+
+message DeliveredEventReq {
+  string event_id = 1;
+}
+
+message DeliveredEventResp {}
+
+message DeadEventReq {
+  string event_id = 1;
+}
+
+message DeadEventResp {}
+
+message ReadEventReq {
+  kafka.Query query = 1;
+}
+
+message ReadEventResp {
+  kafka.Result result = 1;
+}
+
+service EventRepository {
+  rpc CreateEvent(CreateEventReq) returns (CreateEventResp);
+  rpc RetryingEvent(RetryingEventReq) returns (RetryingEventResp);
+  rpc DeliveredEvent(DeliveredEventReq) returns (DeliveredEventResp);
+  rpc DeadEvent(DeadEventReq) returns (DeadEventResp);
+  rpc ReadEvent(ReadEventReq) returns (ReadEventResp);
+}
