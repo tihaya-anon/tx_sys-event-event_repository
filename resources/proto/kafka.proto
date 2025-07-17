@@ -2,12 +2,14 @@ syntax = "proto3";
 
 package kafka;
 
+option go_package = "/pb";
+
 message Query {
   repeated Filter filters = 1;
-  repeated string select_fields = 2;  // optional: projection
+  repeated string select_fields = 2; // optional: projection
   repeated OrderBy order_by = 3;
   int32 limit = 4;
-  string page_token = 5;  // for pagination
+  string page_token = 5; // for pagination
   message Filter {
     enum Operator {
       OP_UNSPECIFIED = 0;
@@ -18,20 +20,20 @@ message Query {
       GT = 5;
       GTE = 6;
       IN = 7;
-      LIKE = 8;  // optional if supporting full-text
+      LIKE = 8; // optional if supporting full-text
     }
 
     string field =
-        1;  // e.g., "status", "topic", "created_at", "metadata.source"
+        1; // e.g., "status", "topic", "created_at", "metadata.source"
     Operator op = 2;
-    repeated string values = 3;  // For IN or single-element match
+    repeated string values = 3; // For IN or single-element match
   }
   message OrderBy {
     string field = 1;
     bool descending = 2;
   }
 }
-message Result {  // read events result
+message Result { // read events result
   repeated Event events = 1;
   string next_page_token = 2;
   int64 total_size = 3;
@@ -55,6 +57,6 @@ message Event {
   string dedup_key = 9;
   map<string, string> metadata = 10;
   bytes payload = 11;
-  string target_service = 12;  // Filled by router or producer
-  string correlation_id = 13;  // For tracing
+  string target_service = 12; // Filled by router or producer
+  string correlation_id = 13; // For tracing
 }

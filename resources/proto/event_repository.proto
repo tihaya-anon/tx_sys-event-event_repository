@@ -1,40 +1,27 @@
 syntax = "proto3";
-import "kafka.proto";
 package event_repository;
+import "kafka.proto";
+option go_package = "/pb";
 
-message CreateEventReq {
-  kafka.Event event = 1;
-}
+message CreateEventReq { kafka.Event event = 1; }
 
-message CreateEventResp {
-  string event_id = 1;
-}
+message CreateEventResp { string event_id = 1; }
 
-message RetryingEventReq {
-  string event_id = 1;
-}
+message RetryingEventReq { string event_id = 1; }
 
 message RetryingEventResp {}
 
-message DeliveredEventReq {
-  string event_id = 1;
-}
+message DeliveredEventReq { string event_id = 1; }
 
 message DeliveredEventResp {}
 
-message DeadEventReq {
-  string event_id = 1;
-}
+message DeadEventReq { string event_id = 1; }
 
 message DeadEventResp {}
 
-message ReadEventReq {
-  kafka.Query query = 1;
-}
+message ReadEventReq { kafka.Query query = 1; }
 
-message ReadEventResp {
-  kafka.Result result = 1;
-}
+message ReadEventResp { kafka.Result result = 1; }
 
 service EventRepository {
   rpc CreateEvent(CreateEventReq) returns (CreateEventResp);
