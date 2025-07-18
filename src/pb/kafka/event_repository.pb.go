@@ -2,11 +2,12 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v6.31.1
-// source: event_repository.proto
+// source: kafka/event_repository.proto
 
-package pb
+package kafka
 
 import (
+	pb "github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -23,14 +24,14 @@ const (
 
 type CreateEventReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Event         *Event                 `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
+	Event         *pb.Event              `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateEventReq) Reset() {
 	*x = CreateEventReq{}
-	mi := &file_event_repository_proto_msgTypes[0]
+	mi := &file_kafka_event_repository_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +43,7 @@ func (x *CreateEventReq) String() string {
 func (*CreateEventReq) ProtoMessage() {}
 
 func (x *CreateEventReq) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[0]
+	mi := &file_kafka_event_repository_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,10 +56,10 @@ func (x *CreateEventReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEventReq.ProtoReflect.Descriptor instead.
 func (*CreateEventReq) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{0}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CreateEventReq) GetEvent() *Event {
+func (x *CreateEventReq) GetEvent() *pb.Event {
 	if x != nil {
 		return x.Event
 	}
@@ -74,7 +75,7 @@ type CreateEventResp struct {
 
 func (x *CreateEventResp) Reset() {
 	*x = CreateEventResp{}
-	mi := &file_event_repository_proto_msgTypes[1]
+	mi := &file_kafka_event_repository_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -86,7 +87,7 @@ func (x *CreateEventResp) String() string {
 func (*CreateEventResp) ProtoMessage() {}
 
 func (x *CreateEventResp) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[1]
+	mi := &file_kafka_event_repository_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -99,7 +100,7 @@ func (x *CreateEventResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateEventResp.ProtoReflect.Descriptor instead.
 func (*CreateEventResp) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{1}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CreateEventResp) GetEventId() string {
@@ -118,7 +119,7 @@ type RetryingEventReq struct {
 
 func (x *RetryingEventReq) Reset() {
 	*x = RetryingEventReq{}
-	mi := &file_event_repository_proto_msgTypes[2]
+	mi := &file_kafka_event_repository_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -130,7 +131,7 @@ func (x *RetryingEventReq) String() string {
 func (*RetryingEventReq) ProtoMessage() {}
 
 func (x *RetryingEventReq) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[2]
+	mi := &file_kafka_event_repository_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -143,7 +144,7 @@ func (x *RetryingEventReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RetryingEventReq.ProtoReflect.Descriptor instead.
 func (*RetryingEventReq) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{2}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RetryingEventReq) GetEventId() string {
@@ -161,7 +162,7 @@ type RetryingEventResp struct {
 
 func (x *RetryingEventResp) Reset() {
 	*x = RetryingEventResp{}
-	mi := &file_event_repository_proto_msgTypes[3]
+	mi := &file_kafka_event_repository_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -173,7 +174,7 @@ func (x *RetryingEventResp) String() string {
 func (*RetryingEventResp) ProtoMessage() {}
 
 func (x *RetryingEventResp) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[3]
+	mi := &file_kafka_event_repository_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -186,7 +187,7 @@ func (x *RetryingEventResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RetryingEventResp.ProtoReflect.Descriptor instead.
 func (*RetryingEventResp) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{3}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{3}
 }
 
 type DeliveredEventReq struct {
@@ -198,7 +199,7 @@ type DeliveredEventReq struct {
 
 func (x *DeliveredEventReq) Reset() {
 	*x = DeliveredEventReq{}
-	mi := &file_event_repository_proto_msgTypes[4]
+	mi := &file_kafka_event_repository_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -210,7 +211,7 @@ func (x *DeliveredEventReq) String() string {
 func (*DeliveredEventReq) ProtoMessage() {}
 
 func (x *DeliveredEventReq) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[4]
+	mi := &file_kafka_event_repository_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -223,7 +224,7 @@ func (x *DeliveredEventReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeliveredEventReq.ProtoReflect.Descriptor instead.
 func (*DeliveredEventReq) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{4}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DeliveredEventReq) GetEventId() string {
@@ -241,7 +242,7 @@ type DeliveredEventResp struct {
 
 func (x *DeliveredEventResp) Reset() {
 	*x = DeliveredEventResp{}
-	mi := &file_event_repository_proto_msgTypes[5]
+	mi := &file_kafka_event_repository_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -253,7 +254,7 @@ func (x *DeliveredEventResp) String() string {
 func (*DeliveredEventResp) ProtoMessage() {}
 
 func (x *DeliveredEventResp) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[5]
+	mi := &file_kafka_event_repository_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -266,7 +267,7 @@ func (x *DeliveredEventResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeliveredEventResp.ProtoReflect.Descriptor instead.
 func (*DeliveredEventResp) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{5}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{5}
 }
 
 type DeadEventReq struct {
@@ -278,7 +279,7 @@ type DeadEventReq struct {
 
 func (x *DeadEventReq) Reset() {
 	*x = DeadEventReq{}
-	mi := &file_event_repository_proto_msgTypes[6]
+	mi := &file_kafka_event_repository_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -290,7 +291,7 @@ func (x *DeadEventReq) String() string {
 func (*DeadEventReq) ProtoMessage() {}
 
 func (x *DeadEventReq) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[6]
+	mi := &file_kafka_event_repository_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -303,7 +304,7 @@ func (x *DeadEventReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeadEventReq.ProtoReflect.Descriptor instead.
 func (*DeadEventReq) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{6}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DeadEventReq) GetEventId() string {
@@ -321,7 +322,7 @@ type DeadEventResp struct {
 
 func (x *DeadEventResp) Reset() {
 	*x = DeadEventResp{}
-	mi := &file_event_repository_proto_msgTypes[7]
+	mi := &file_kafka_event_repository_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -333,7 +334,7 @@ func (x *DeadEventResp) String() string {
 func (*DeadEventResp) ProtoMessage() {}
 
 func (x *DeadEventResp) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[7]
+	mi := &file_kafka_event_repository_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -346,19 +347,19 @@ func (x *DeadEventResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeadEventResp.ProtoReflect.Descriptor instead.
 func (*DeadEventResp) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{7}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{7}
 }
 
 type ReadEventReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Query         *Query                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	Query         *pb.Query              `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ReadEventReq) Reset() {
 	*x = ReadEventReq{}
-	mi := &file_event_repository_proto_msgTypes[8]
+	mi := &file_kafka_event_repository_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -370,7 +371,7 @@ func (x *ReadEventReq) String() string {
 func (*ReadEventReq) ProtoMessage() {}
 
 func (x *ReadEventReq) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[8]
+	mi := &file_kafka_event_repository_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -383,10 +384,10 @@ func (x *ReadEventReq) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadEventReq.ProtoReflect.Descriptor instead.
 func (*ReadEventReq) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{8}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *ReadEventReq) GetQuery() *Query {
+func (x *ReadEventReq) GetQuery() *pb.Query {
 	if x != nil {
 		return x.Query
 	}
@@ -395,14 +396,14 @@ func (x *ReadEventReq) GetQuery() *Query {
 
 type ReadEventResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Result        *Result                `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
+	Result        *pb.Result             `protobuf:"bytes,1,opt,name=result,proto3" json:"result,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ReadEventResp) Reset() {
 	*x = ReadEventResp{}
-	mi := &file_event_repository_proto_msgTypes[9]
+	mi := &file_kafka_event_repository_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -414,7 +415,7 @@ func (x *ReadEventResp) String() string {
 func (*ReadEventResp) ProtoMessage() {}
 
 func (x *ReadEventResp) ProtoReflect() protoreflect.Message {
-	mi := &file_event_repository_proto_msgTypes[9]
+	mi := &file_kafka_event_repository_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -427,21 +428,21 @@ func (x *ReadEventResp) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadEventResp.ProtoReflect.Descriptor instead.
 func (*ReadEventResp) Descriptor() ([]byte, []int) {
-	return file_event_repository_proto_rawDescGZIP(), []int{9}
+	return file_kafka_event_repository_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *ReadEventResp) GetResult() *Result {
+func (x *ReadEventResp) GetResult() *pb.Result {
 	if x != nil {
 		return x.Result
 	}
 	return nil
 }
 
-var File_event_repository_proto protoreflect.FileDescriptor
+var File_kafka_event_repository_proto protoreflect.FileDescriptor
 
-const file_event_repository_proto_rawDesc = "" +
+const file_kafka_event_repository_proto_rawDesc = "" +
 	"\n" +
-	"\x16event_repository.proto\x12\x10event_repository\x1a\vkafka.proto\"4\n" +
+	"\x1ckafka/event_repository.proto\x12\x10event_repository\x1a\vkafka.proto\"4\n" +
 	"\x0eCreateEventReq\x12\"\n" +
 	"\x05event\x18\x01 \x01(\v2\f.kafka.EventR\x05event\",\n" +
 	"\x0fCreateEventResp\x12\x19\n" +
@@ -464,22 +465,22 @@ const file_event_repository_proto_rawDesc = "" +
 	"\rRetryingEvent\x12\".event_repository.RetryingEventReq\x1a#.event_repository.RetryingEventResp\x12[\n" +
 	"\x0eDeliveredEvent\x12#.event_repository.DeliveredEventReq\x1a$.event_repository.DeliveredEventResp\x12L\n" +
 	"\tDeadEvent\x12\x1e.event_repository.DeadEventReq\x1a\x1f.event_repository.DeadEventResp\x12L\n" +
-	"\tReadEvent\x12\x1e.event_repository.ReadEventReq\x1a\x1f.event_repository.ReadEventRespB\x05Z\x03/pbb\x06proto3"
+	"\tReadEvent\x12\x1e.event_repository.ReadEventReq\x1a\x1f.event_repository.ReadEventRespBCZAgithub.com/tihaya-anon/tx_sys-event-event_repository/src/pb/kafkab\x06proto3"
 
 var (
-	file_event_repository_proto_rawDescOnce sync.Once
-	file_event_repository_proto_rawDescData []byte
+	file_kafka_event_repository_proto_rawDescOnce sync.Once
+	file_kafka_event_repository_proto_rawDescData []byte
 )
 
-func file_event_repository_proto_rawDescGZIP() []byte {
-	file_event_repository_proto_rawDescOnce.Do(func() {
-		file_event_repository_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_event_repository_proto_rawDesc), len(file_event_repository_proto_rawDesc)))
+func file_kafka_event_repository_proto_rawDescGZIP() []byte {
+	file_kafka_event_repository_proto_rawDescOnce.Do(func() {
+		file_kafka_event_repository_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_kafka_event_repository_proto_rawDesc), len(file_kafka_event_repository_proto_rawDesc)))
 	})
-	return file_event_repository_proto_rawDescData
+	return file_kafka_event_repository_proto_rawDescData
 }
 
-var file_event_repository_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
-var file_event_repository_proto_goTypes = []any{
+var file_kafka_event_repository_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_kafka_event_repository_proto_goTypes = []any{
 	(*CreateEventReq)(nil),     // 0: event_repository.CreateEventReq
 	(*CreateEventResp)(nil),    // 1: event_repository.CreateEventResp
 	(*RetryingEventReq)(nil),   // 2: event_repository.RetryingEventReq
@@ -490,11 +491,11 @@ var file_event_repository_proto_goTypes = []any{
 	(*DeadEventResp)(nil),      // 7: event_repository.DeadEventResp
 	(*ReadEventReq)(nil),       // 8: event_repository.ReadEventReq
 	(*ReadEventResp)(nil),      // 9: event_repository.ReadEventResp
-	(*Event)(nil),              // 10: kafka.Event
-	(*Query)(nil),              // 11: kafka.Query
-	(*Result)(nil),             // 12: kafka.Result
+	(*pb.Event)(nil),           // 10: kafka.Event
+	(*pb.Query)(nil),           // 11: kafka.Query
+	(*pb.Result)(nil),          // 12: kafka.Result
 }
-var file_event_repository_proto_depIdxs = []int32{
+var file_kafka_event_repository_proto_depIdxs = []int32{
 	10, // 0: event_repository.CreateEventReq.event:type_name -> kafka.Event
 	11, // 1: event_repository.ReadEventReq.query:type_name -> kafka.Query
 	12, // 2: event_repository.ReadEventResp.result:type_name -> kafka.Result
@@ -515,27 +516,26 @@ var file_event_repository_proto_depIdxs = []int32{
 	0,  // [0:3] is the sub-list for field type_name
 }
 
-func init() { file_event_repository_proto_init() }
-func file_event_repository_proto_init() {
-	if File_event_repository_proto != nil {
+func init() { file_kafka_event_repository_proto_init() }
+func file_kafka_event_repository_proto_init() {
+	if File_kafka_event_repository_proto != nil {
 		return
 	}
-	file_kafka_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_event_repository_proto_rawDesc), len(file_event_repository_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_kafka_event_repository_proto_rawDesc), len(file_kafka_event_repository_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_event_repository_proto_goTypes,
-		DependencyIndexes: file_event_repository_proto_depIdxs,
-		MessageInfos:      file_event_repository_proto_msgTypes,
+		GoTypes:           file_kafka_event_repository_proto_goTypes,
+		DependencyIndexes: file_kafka_event_repository_proto_depIdxs,
+		MessageInfos:      file_kafka_event_repository_proto_msgTypes,
 	}.Build()
-	File_event_repository_proto = out.File
-	file_event_repository_proto_goTypes = nil
-	file_event_repository_proto_depIdxs = nil
+	File_kafka_event_repository_proto = out.File
+	file_kafka_event_repository_proto_goTypes = nil
+	file_kafka_event_repository_proto_depIdxs = nil
 }

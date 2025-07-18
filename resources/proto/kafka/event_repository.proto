@@ -1,7 +1,7 @@
 syntax = "proto3";
 package event_repository;
 import "kafka.proto";
-option go_package = "/pb";
+option go_package = "github.com/tihaya-anon/tx_sys-event-event_repository/src/pb/kafka";
 
 message CreateEventReq { kafka.Event event = 1; }
 

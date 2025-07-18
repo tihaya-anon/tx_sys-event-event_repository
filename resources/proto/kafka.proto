@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package kafka;
 
-option go_package = "/pb";
+option go_package = "github.com/tihaya-anon/tx_sys-event-event_repository/src/pb";
 
 message Query {
   repeated Filter filters = 1;

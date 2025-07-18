@@ -595,7 +595,7 @@ const file_kafka_proto_rawDesc = "" +
 	"\aPENDING\x10\x01\x12\f\n" +
 	"\bRETRYING\x10\x02\x12\r\n" +
 	"\tDELIVERED\x10\x03\x12\b\n" +
-	"\x04DEAD\x10\x04B\x05Z\x03/pbb\x06proto3"
+	"\x04DEAD\x10\x04B=Z;github.com/tihaya-anon/tx_sys-event-event_repository/src/pbb\x06proto3"
 
 var (
 	file_kafka_proto_rawDescOnce sync.Once
