@@ -25,3 +25,6 @@ UPDATE events SET status = $2 WHERE event_id = $1;
 
 -- name: ReadEventByEventId :one
 SELECT * FROM events WHERE event_id = $1;
+
+-- name: ReadEventByDedupKey :one
+SELECT * FROM events WHERE dedup_key = $1;
