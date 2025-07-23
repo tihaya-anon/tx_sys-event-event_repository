@@ -7,6 +7,9 @@ import (
 )
 
 func DB2PB(e *db.Event) (*pb.Event, error) {
+	if e == nil {
+		return nil, ErrNilInput
+	}
 	metadata, err := Bytes2Map(e.Metadata)
 	if err != nil {
 		return nil, err
@@ -31,12 +34,15 @@ func DB2PB(e *db.Event) (*pb.Event, error) {
 }
 
 func PB2DB(e *pb.Event) (*db.Event, error) {
+	if e == nil {
+		return nil, ErrNilInput
+	}
 	metadata, err := Map2Bytes(e.Metadata)
 	if err != nil {
 		return nil, err
 	}
 	var status db.DeliveryStatus
-	err = status.Scan(e.Status)
+	err = status.Scan(e.Status.String())
 	if err != nil {
 		return nil, err
 	}
