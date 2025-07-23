@@ -9,7 +9,11 @@ import (
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 )
 
-func IsDup(ctx context.Context, q *db.Queries, dedupKey string) (*db.Event, error) {
+type Reader interface {
+	ReadEventByDedupKey(ctx context.Context, dedupKey pgtype.Text) (db.Event, error)
+}
+
+func IsDup(ctx context.Context, q Reader, dedupKey string) (*db.Event, error) {
 	event, err := q.ReadEventByDedupKey(ctx, pgtype.Text{String: dedupKey, Valid: true})
 	// error occurred
 	if err != nil && errors.Is(err, pgx.ErrNoRows) { //expected ErrNoRows, means not duplicated

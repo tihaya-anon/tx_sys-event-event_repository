@@ -6,6 +6,9 @@ import (
 )
 
 func BuildProducerRecord(e *pb.Event) map[string]any {
+	if e == nil {
+		return nil
+	}
 	payload := e.Payload
 	timestamp := e.CreatedAt
 	headers := mapping.Metadata2Headers(e.Metadata)
