@@ -9,7 +9,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/bwmarrin/snowflake"
-	"github.com/tihaya-anon/tx_sys-event-event_repository/src/constant"
+	constant_kafka "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/dao"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
@@ -41,8 +41,8 @@ func (g *EventRepositoryServer) CreateEvent(ctx context.Context, req *kafka.Crea
 	go func(url string, event *pb.Event) {
 		pr := util.BuildProducerRecord(event)
 		body, _ := json.Marshal(pr)
-		http.Post(url, constant.KAFKA_BRIDGE_JSON, bytes.NewBuffer(body))
-	}(fmt.Sprintf("%s/topics/%s", constant.KAFKA_BRIDGE_HOST, constant.KAFKA_BRIDGE_CREATE_TOPIC), req.Event)
+		http.Post(url, constant_kafka.KAFKA_BRIDGE_JSON, bytes.NewBuffer(body))
+	}(fmt.Sprintf("%s/topics/%s", constant_kafka.KAFKA_BRIDGE_HOST, constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC), req.Event)
 	return &kafka.CreateEventResp{EventId: id.String()}, nil
 }
 

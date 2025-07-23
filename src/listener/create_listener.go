@@ -8,16 +8,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/tihaya-anon/tx_sys-event-event_repository/src/constant"
+	constant_kafka "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/mapping"
 )
 
 func CreateListener(ctx context.Context, q *db.Queries) {
-	groupId, name, maxBytes := getComsumerInfoByTopic(constant.KAFKA_BRIDGE_CREATE_TOPIC)
+	groupId, name, maxBytes := getComsumerInfoByTopic(constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC)
 	consumerURL := fmt.Sprintf(
 		"%s/consumers/%s/instances/%s/records?max_bytes=%d",
-		constant.KAFKA_BRIDGE_HOST, groupId, name, maxBytes,
+		constant_kafka.KAFKA_BRIDGE_HOST, groupId, name, maxBytes,
 	)
 	resp, err := http.Get(consumerURL)
 	if err != nil || resp.StatusCode != http.StatusOK {
@@ -33,7 +33,7 @@ func CreateListener(ctx context.Context, q *db.Queries) {
 }
 
 func saveRecord(ctx context.Context, q *db.Queries, record map[string]any) {
-	if record["topic"] != constant.KAFKA_BRIDGE_CREATE_TOPIC {
+	if record["topic"] != constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC {
 		return
 	}
 	payload := record["value"].([]byte)
@@ -53,7 +53,7 @@ func saveRecord(ctx context.Context, q *db.Queries, record map[string]any) {
 	}
 }
 
-//TODO get suggestion from cache
+// TODO get suggestion from cache
 func getComsumerInfoByTopic(topic string) (string, string, int) {
 	groupId := fmt.Sprintf("<test-group-id-%s>", topic)
 	name := fmt.Sprintf("<test-name-%s>", topic)
