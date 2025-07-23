@@ -7,6 +7,7 @@ require (
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-playground/assert v1.2.1
 	github.com/jackc/pgx/v5 v5.7.5
+	github.com/robfig/cron/v3 v3.0.1
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 )

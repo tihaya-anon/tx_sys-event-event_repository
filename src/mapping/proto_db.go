@@ -6,10 +6,10 @@ import (
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
 )
 
-func DB2PB(e *db.Event) *pb.Event {
+func DB2PB(e *db.Event) (*pb.Event, error) {
 	metadata, err := Bytes2Map(e.Metadata)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	statusIdx := pb.Event_DeliveryStatus_value[string(e.Status)]
 	status := pb.Event_DeliveryStatus(statusIdx)
@@ -27,18 +27,18 @@ func DB2PB(e *db.Event) *pb.Event {
 		Payload:       e.Payload,
 		TargetService: e.TargetService.String,
 		CorrelationId: e.CorrelationID.String,
-	}
+	}, nil
 }
 
-func PB2DB(e *pb.Event) *db.Event {
+func PB2DB(e *pb.Event) (*db.Event, error) {
 	metadata, err := Map2Bytes(e.Metadata)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	var status db.DeliveryStatus
 	err = status.Scan(e.Status)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	return &db.Event{
 		EventID:       e.EventId,
@@ -54,5 +54,5 @@ func PB2DB(e *pb.Event) *db.Event {
 		Payload:       e.Payload,
 		TargetService: pgtype.Text{String: e.TargetService, Valid: true},
 		CorrelationID: pgtype.Text{String: e.CorrelationId, Valid: true},
-	}
+	}, nil
 }

@@ -1,4 +1,4 @@
-package handler
+package server
 
 import (
 	"context"
@@ -31,8 +31,8 @@ func paraMapping(dbEvents []db.Event) ([]*pb.Event, error) {
 				return
 			default:
 			}
-			pbEvent := mapping.DB2PB(&dbEvent)
-			if pbEvent == nil {
+			pbEvent, err := mapping.DB2PB(&dbEvent)
+			if err != nil {
 				select {
 				case errChan <- fmt.Errorf("mapping failed for event index %d", i):
 					cancel() // First error wins
@@ -54,10 +54,14 @@ func paraMapping(dbEvents []db.Event) ([]*pb.Event, error) {
 	}
 }
 
-func (g *GrpcHandler) readEventByEventId(ctx context.Context, eventId string) (*pb.Event, error) {
+func (g *EventRepositoryServer) readEventByEventId(ctx context.Context, eventId string) (*pb.Event, error) {
 	dbEvent, err := g.q.ReadEventByEventId(ctx, eventId)
 	if err != nil {
 		return nil, err
 	}
-	return mapping.DB2PB(&dbEvent), nil
+	pbEvent, err := mapping.DB2PB(&dbEvent)
+	if err != nil {
+		return nil, err
+	}
+	return pbEvent, nil
 }

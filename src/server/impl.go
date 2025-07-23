@@ -1,9 +1,10 @@
-package handler
+package server
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	sq "github.com/Masterminds/squirrel"
@@ -16,14 +17,14 @@ import (
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/util"
 )
 
-type GrpcHandler struct {
+type EventRepositoryServer struct {
 	q  *db.Queries
 	tx db.DBTX
 	kafka.UnimplementedEventRepositoryServer
 }
 
 // CreateEvent implements kafka.EventRepositoryServer.
-func (g *GrpcHandler) CreateEvent(ctx context.Context, req *kafka.CreateEventReq) (*kafka.CreateEventResp, error) {
+func (g *EventRepositoryServer) CreateEvent(ctx context.Context, req *kafka.CreateEventReq) (*kafka.CreateEventResp, error) {
 	event, err := util.IsDup(ctx, g.q, req.Event.DedupKey)
 	if err != nil { // error occurred
 		return nil, err
@@ -41,12 +42,12 @@ func (g *GrpcHandler) CreateEvent(ctx context.Context, req *kafka.CreateEventReq
 		pr := util.BuildProducerRecord(event)
 		body, _ := json.Marshal(pr)
 		http.Post(url, constant.KAFKA_BRIDGE_JSON, bytes.NewBuffer(body))
-	}("http://kafka-bridge/topics/create-event", req.Event)
+	}(fmt.Sprintf("%s/topics/%s", constant.KAFKA_BRIDGE_HOST, constant.KAFKA_BRIDGE_CREATE_TOPIC), req.Event)
 	return &kafka.CreateEventResp{EventId: id.String()}, nil
 }
 
 // DeadEvent implements kafka.EventRepositoryServer.
-func (g *GrpcHandler) DeadEvent(ctx context.Context, req *kafka.DeadEventReq) (*kafka.DeadEventResp, error) {
+func (g *EventRepositoryServer) DeadEvent(ctx context.Context, req *kafka.DeadEventReq) (*kafka.DeadEventResp, error) {
 	err := g.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: req.EventId, Status: db.DeliveryStatusDEAD})
 	if err != nil {
 		return nil, err
@@ -55,7 +56,7 @@ func (g *GrpcHandler) DeadEvent(ctx context.Context, req *kafka.DeadEventReq) (*
 }
 
 // DeliveredEvent implements kafka.EventRepositoryServer.
-func (g *GrpcHandler) DeliveredEvent(ctx context.Context, req *kafka.DeliveredEventReq) (*kafka.DeliveredEventResp, error) {
+func (g *EventRepositoryServer) DeliveredEvent(ctx context.Context, req *kafka.DeliveredEventReq) (*kafka.DeliveredEventResp, error) {
 	err := g.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: req.EventId, Status: db.DeliveryStatusDELIVERED})
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func (g *GrpcHandler) DeliveredEvent(ctx context.Context, req *kafka.DeliveredEv
 }
 
 // ReadEvent implements kafka.EventRepositoryServer.
-func (g *GrpcHandler) ReadEvent(ctx context.Context, req *kafka.ReadEventReq) (*kafka.ReadEventResp, error) {
+func (g *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEventReq) (*kafka.ReadEventResp, error) {
 	for _, f := range req.Query.Filters {
 		if filterWithEventId(f) {
 			event, err := g.readEventByEventId(ctx, f.Values[0])
@@ -98,7 +99,7 @@ func (g *GrpcHandler) ReadEvent(ctx context.Context, req *kafka.ReadEventReq) (*
 }
 
 // RetryingEvent implements kafka.EventRepositoryServer.
-func (g *GrpcHandler) RetryingEvent(ctx context.Context, req *kafka.RetryingEventReq) (*kafka.RetryingEventResp, error) {
+func (g *EventRepositoryServer) RetryingEvent(ctx context.Context, req *kafka.RetryingEventReq) (*kafka.RetryingEventResp, error) {
 	err := g.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: req.EventId, Status: db.DeliveryStatusRETRYING})
 	if err != nil {
 		return nil, err
@@ -106,6 +107,6 @@ func (g *GrpcHandler) RetryingEvent(ctx context.Context, req *kafka.RetryingEven
 	return &kafka.RetryingEventResp{}, nil
 }
 
-func NewGrpcHandler(q *db.Queries, tx db.DBTX) *GrpcHandler {
-	return &GrpcHandler{q: q, tx: tx}
+func newGrpcHandler(q *db.Queries, tx db.DBTX) *EventRepositoryServer {
+	return &EventRepositoryServer{q: q, tx: tx}
 }
