@@ -1,4 +1,4 @@
--- name: CreateEvent :one
+-- name: CreateEvent :exec
 INSERT INTO events (
   event_id,
   event_topic,
@@ -17,8 +17,7 @@ INSERT INTO events (
   $1, $2, $3, $4, 
   $5, $6, $7, $8, 
   $9, $10, $11, $12, $13
-)
-RETURNING *;
+);
 
 -- name: UpdateEventStatus :exec
 UPDATE events SET status = $2 WHERE event_id = $1;

@@ -55,7 +55,7 @@ message Event {
   DeliveryStatus status = 7;
   int32 retry_count = 8;
   string dedup_key = 9;
-  map<string, string> metadata = 10;
+  map<string, string> metadata = 10; // will be transferred as kafka message headers, the value should be base64 encoded string
   bytes payload = 11;
   string target_service = 12; // Filled by router or producer
   string correlation_id = 13; // For tracing

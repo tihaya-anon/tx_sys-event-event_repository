@@ -4,6 +4,7 @@ go 1.24.4
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/go-playground/assert v1.2.1
 	github.com/jackc/pgx/v5 v5.7.5
 	google.golang.org/grpc v1.73.0

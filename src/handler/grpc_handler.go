@@ -1,9 +1,14 @@
 package handler
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"net/http"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/bwmarrin/snowflake"
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/constant"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/dao"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
@@ -26,9 +31,18 @@ func (g *GrpcHandler) CreateEvent(ctx context.Context, req *kafka.CreateEventReq
 	if event != nil { // duplicated
 		return &kafka.CreateEventResp{EventId: event.EventID}, nil
 	}
-	//TODO generate event id
-	//TODO put the event to create kafka queue
-	return &kafka.CreateEventResp{EventId: req.Event.EventId}, nil
+	//TODO determine the snowflake node id
+	node, err := snowflake.NewNode(1)
+	if err != nil {
+		return nil, err
+	}
+	id := node.Generate()
+	go func(url string, event *pb.Event) {
+		pr := util.BuildProducerRecord(event)
+		body, _ := json.Marshal(pr)
+		http.Post(url, constant.KAFKA_BRIDGE_JSON, bytes.NewBuffer(body))
+	}("http://kafka-bridge/topics/create-event", req.Event)
+	return &kafka.CreateEventResp{EventId: id.String()}, nil
 }
 
 // DeadEvent implements kafka.EventRepositoryServer.
