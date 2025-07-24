@@ -11,7 +11,11 @@ func Metadata2Headers(metadata map[string]string) []map[string]string {
 func Headers2Metadata(headers []map[string]string) map[string]string {
 	metadata := make(map[string]string)
 	for _, header := range headers {
-		metadata[header["key"]] = header["value"]
+		key, value := header["key"], header["value"]
+		if key == "" || value == "" {
+			continue
+		}
+		metadata[key] = value
 	}
 	return metadata
 }

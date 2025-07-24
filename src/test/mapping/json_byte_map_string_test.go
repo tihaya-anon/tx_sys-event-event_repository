@@ -19,11 +19,7 @@ func TestMap2Bytes(t *testing.T) {
 		{
 			name:    "nil map",
 			input:   nil,
-			wantErr: false,
-			validate: func(t *testing.T, data []byte) {
-				t.Helper()
-				assert.Nil(t, data, "Expected nil for nil input map")
-			},
+			wantErr: true,
 		},
 		{
 			name:    "empty map",

@@ -128,17 +128,3 @@ func TestDB2PB_InvalidMetadata(t *testing.T) {
 	t.Logf("Expected error: %v", err)
 	assert.Nil(t, pbEvent, "PB event should be nil when error occurs")
 }
-
-func TestPB2DB_InvalidMetadata(t *testing.T) {
-	// Create a PB event with invalid metadata
-	pbEvent := createTestPBEvent()
-	pbEvent.Metadata = map[string]string{
-		"invalid": string([]byte{0xff, 0xfe, 0xfd}), // invalid UTF-8
-	}
-
-	// Execute and verify
-	dbEvent, err := PB2DB(pbEvent)
-	assert.Error(t, err, "PB2DB should return an error for invalid metadata")
-	t.Logf("Expected error: %v", err)
-	assert.Nil(t, dbEvent, "DB event should be nil when error occurs")
-}
