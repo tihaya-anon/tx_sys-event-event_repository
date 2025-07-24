@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -49,10 +50,10 @@ func getDefaultAndFetch(ctx context.Context, rdb *redis.Client, key string, fetc
 
 	if err == redis.Nil {
 		wg.Wait()
-		return resp.Val, resp.Err
+		return resp.Val, fmt.Errorf("no default value found for key %s", key)
 	}
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error %s for key %s", err.Error(), key)
 	}
 	return value, nil
 }

@@ -2,12 +2,11 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"sync"
 
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/mapping"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/util"
 )
 
 func filterWithEventId(f *pb.Query_Filter) bool {
@@ -16,42 +15,23 @@ func filterWithEventId(f *pb.Query_Filter) bool {
 
 func paraMapping(dbEvents []db.Event) ([]*pb.Event, error) {
 	pbEvents := make([]*pb.Event, len(dbEvents))
-	wg := sync.WaitGroup{}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	errChan := make(chan error, 1)
-
+	concurrency := util.NewConcurrency(context.Background())
 	for i, dbEvent := range dbEvents {
-		wg.Add(1)
-		go func(i int, dbEvent db.Event) {
-			defer wg.Done()
-			select {
-			case <-ctx.Done():
-				return
-			default:
-			}
+		concurrency.Add(func(ctx context.Context) error {
 			pbEvent, err := mapping.DB2PB(&dbEvent)
 			if err != nil {
-				select {
-				case errChan <- fmt.Errorf("mapping failed for event index %d", i):
-					cancel() // First error wins
-				default:
-				}
-				return
+				return err
 			}
 			pbEvents[i] = pbEvent
-		}(i, dbEvent)
+			return nil
+		})
 	}
-
-	wg.Wait()
-
-	select {
-	case err := <-errChan:
+	concurrency.Run()
+	concurrency.Wait()
+	if err := concurrency.Err(); err != nil {
 		return nil, err
-	default:
-		return pbEvents, nil
 	}
+	return pbEvents, nil
 }
 
 func (g *EventRepositoryServer) readEventByEventId(ctx context.Context, eventId string) (*pb.Event, error) {
