@@ -16,7 +16,7 @@ var EnvList = []string{"dev", "prod", "test"}
 
 var APP_ENV string
 
-func InitAppEnv() {
+func Init() {
 	APP_ENV = util.GetEnv(APP_ENV_NAME, APP_ENV_DEFAULT)
 	if slices.Contains(EnvList, APP_ENV) {
 		log.Printf("Active APP_ENV(%s)", APP_ENV)

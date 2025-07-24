@@ -22,7 +22,7 @@ func main() {
 
 	c := cron.New()
 	c.AddFunc("0 */1 * * * *", func() {
-		listener.CreateListener(context.Background(), nil)
+		listener.CreateListener(context.Background(), nil, nil)
 	})
 	go c.Start()
 	// Wait for interrupt signal

@@ -8,6 +8,6 @@ const KAFKA_BRIDGE_HOST_DEFAULT = "http://kafka-bridge"
 // NO TAILING SLASH
 var KAFKA_BRIDGE_HOST string
 
-func InitKafkaBridge() {
+func Init() {
 	KAFKA_BRIDGE_HOST = util.GetEnv(KAFKA_BRIDGE_HOST_NAME, KAFKA_BRIDGE_HOST_DEFAULT)
 }

@@ -12,7 +12,7 @@ const (
 
 var DB_URL string
 
-func InitPostgre(appEnv string) {
+func Init(appEnv string) {
 	switch appEnv {
 	case "test":
 		DB_URL = util.MustGetEnv(TEST_DB_URL_NAME)
