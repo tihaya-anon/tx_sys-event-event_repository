@@ -107,6 +107,6 @@ func (g *EventRepositoryServer) RetryingEvent(ctx context.Context, req *kafka.Re
 	return &kafka.RetryingEventResp{}, nil
 }
 
-func newGrpcHandler(q dao.Query, r dao.Reader) *EventRepositoryServer {
+func NewGrpcHandler(q dao.Query, r dao.Reader) *EventRepositoryServer {
 	return &EventRepositoryServer{q: q, r: r}
 }

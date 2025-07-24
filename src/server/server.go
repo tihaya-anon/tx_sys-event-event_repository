@@ -32,7 +32,7 @@ func NewServer(port int) (*Server, error) {
 	q := db.New(pool)
 	r := dao_impl.NewReader(pool)
 	s := grpc.NewServer()
-	kafka.RegisterEventRepositoryServer(s, newGrpcHandler(q, r))
+	kafka.RegisterEventRepositoryServer(s, NewGrpcHandler(q, r))
 	return &Server{grpcServer: s, listener: lis}, nil
 }
 
