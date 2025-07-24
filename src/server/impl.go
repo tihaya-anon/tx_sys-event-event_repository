@@ -18,8 +18,8 @@ import (
 )
 
 type EventRepositoryServer struct {
-	q  *db.Queries
-	tx db.DBTX
+	r dao.Reader
+	q dao.Query
 	kafka.UnimplementedEventRepositoryServer
 }
 
@@ -83,11 +83,11 @@ func (g *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEv
 	if err != nil {
 		return nil, err
 	}
-	dbEvents, err := dao.Read(ctx, g.tx, pageQuery.PageSql, pageQuery.PageArgs...)
+	dbEvents, err := g.r.Select(ctx, pageQuery.PageSql, pageQuery.PageArgs...)
 	if err != nil {
 		return nil, err
 	}
-	totalSize, err := dao.Count(ctx, g.tx, pageQuery.TotalSql, pageQuery.TotalArgs...)
+	totalSize, err := g.r.Count(ctx, pageQuery.TotalSql, pageQuery.TotalArgs...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +107,6 @@ func (g *EventRepositoryServer) RetryingEvent(ctx context.Context, req *kafka.Re
 	return &kafka.RetryingEventResp{}, nil
 }
 
-func newGrpcHandler(q *db.Queries, tx db.DBTX) *EventRepositoryServer {
-	return &EventRepositoryServer{q: q, tx: tx}
+func newGrpcHandler(q dao.Query, r dao.Reader) *EventRepositoryServer {
+	return &EventRepositoryServer{q: q, r: r}
 }

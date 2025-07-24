@@ -6,6 +6,10 @@ import (
 	"log"
 	"net"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	constant_postgre "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/postgre"
+	dao_impl "github.com/tihaya-anon/tx_sys-event-event_repository/src/dao/impl"
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb/kafka"
 	"google.golang.org/grpc"
 )
@@ -20,9 +24,15 @@ func NewServer(port int) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	pool, err := pgxpool.New(context.Background(), constant_postgre.DB_URL)
+	if err != nil {
+		return nil, err
+	}
+	defer pool.Close()
+	q := db.New(pool)
+	r := dao_impl.NewReader(pool)
 	s := grpc.NewServer()
-	// TODO mock db required
-	kafka.RegisterEventRepositoryServer(s, newGrpcHandler(nil, nil))
+	kafka.RegisterEventRepositoryServer(s, newGrpcHandler(q, r))
 	return &Server{grpcServer: s, listener: lis}, nil
 }
 
