@@ -9,11 +9,12 @@ import (
 	"net/http"
 
 	constant_kafka "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/dao"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/mapping"
 )
 
-func CreateListener(ctx context.Context, q *db.Queries) {
+func CreateListener(ctx context.Context, q dao.Query) {
 	groupId, name, maxBytes := getComsumerInfoByTopic(constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC)
 	consumerURL := fmt.Sprintf(
 		"%s/consumers/%s/instances/%s/records?max_bytes=%d",
@@ -32,7 +33,7 @@ func CreateListener(ctx context.Context, q *db.Queries) {
 	}
 }
 
-func saveRecord(ctx context.Context, q *db.Queries, record map[string]any) {
+func saveRecord(ctx context.Context, q dao.Query, record map[string]any) {
 	if record["topic"] != constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC {
 		return
 	}
