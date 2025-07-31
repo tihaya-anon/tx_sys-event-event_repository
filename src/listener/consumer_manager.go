@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -14,63 +13,6 @@ import (
 	constant_kafka "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/kafka_bridge"
 )
-
-// kafkaBridgeClientImpl implements KafkaBridgeClient using the Kafka Bridge API client
-type kafkaBridgeClientImpl struct {
-	client *kafka_bridge.APIClient
-}
-
-// CreateConsumer creates a new Kafka consumer
-func (k *kafkaBridgeClientImpl) CreateConsumer(ctx context.Context, groupID string, consumer kafka_bridge.Consumer) (*kafka_bridge.CreatedConsumer, *http.Response, error) {
-	return k.client.ConsumersAPI.CreateConsumer(ctx, groupID).Consumer(consumer).Execute()
-}
-
-// Subscribe subscribes a consumer to topics
-func (k *kafkaBridgeClientImpl) Subscribe(ctx context.Context, groupID string, consumerName string, topics kafka_bridge.Topics) (*http.Response, error) {
-	resp, err := k.client.ConsumersAPI.Subscribe(ctx, groupID, consumerName).Topics(topics).Execute()
-	return resp, err
-}
-
-// ListSubscriptions lists a consumer's subscriptions
-func (k *kafkaBridgeClientImpl) ListSubscriptions(ctx context.Context, groupID string, consumerName string) (interface{}, *http.Response, error) {
-	return k.client.ConsumersAPI.ListSubscriptions(ctx, groupID, consumerName).Execute()
-}
-
-// DeleteConsumer deletes a consumer
-func (k *kafkaBridgeClientImpl) DeleteConsumer(ctx context.Context, groupID string, consumerName string) (*http.Response, error) {
-	return k.client.ConsumersAPI.DeleteConsumer(ctx, groupID, consumerName).Execute()
-}
-
-// Poll polls for messages
-func (k *kafkaBridgeClientImpl) Poll(ctx context.Context, groupID string, consumerName string, maxBytes int) ([]map[string]interface{}, error) {
-	// This is implemented in pollMessages function, but we include it here for interface completeness
-	return nil, fmt.Errorf("not implemented directly in client wrapper")
-}
-
-// redisClientImpl implements RedisClient using go-redis
-type redisClientImpl struct {
-	rdb *redis.Client
-}
-
-// Get gets a value from Redis
-func (r *redisClientImpl) Get(ctx context.Context, key string) (string, error) {
-	return r.rdb.Get(ctx, key).Result()
-}
-
-// Set sets a value in Redis
-func (r *redisClientImpl) Set(ctx context.Context, key string, value string, expiration interface{}) error {
-	return r.rdb.Set(ctx, key, value, expiration.(time.Duration)).Err()
-}
-
-// Ping pings Redis
-func (r *redisClientImpl) Ping(ctx context.Context) error {
-	return r.rdb.Ping(ctx).Err()
-}
-
-// Close closes the Redis connection
-func (r *redisClientImpl) Close() error {
-	return r.rdb.Close()
-}
 
 // ConsumerManager handles the lifecycle of Kafka consumers
 type ConsumerManager struct {
@@ -141,10 +83,10 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 	if topic == "" {
 		topic = constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC // Default topic if none provided
 	}
-	
+
 	// Use topic as consumer group ID for simplicity
 	groupID := topic
-	
+
 	// Generate a unique consumer name with pod name and timestamp
 	podName := os.Getenv("POD_NAME")
 	if podName == "" {
@@ -152,7 +94,7 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 	}
 	timestamp := time.Now().Unix()
 	consumerName := fmt.Sprintf("%s-%s-%d", topic, podName, timestamp)
-	
+
 	// Setup consumer config
 	consumer := kafka_bridge.NewConsumer()
 	consumer.SetName(consumerName)
@@ -161,18 +103,18 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 	consumer.SetFetchMinBytes(1)
 	consumer.SetConsumerRequestTimeoutMs(30000)
 	consumer.SetEnableAutoCommit(true)
-	
+
 	// Create consumer via API
 	createdConsumer, resp, err := cm.kafkaClient.CreateConsumer(ctx, groupID, *consumer)
 	if err != nil || resp.StatusCode != 200 {
 		log.Printf("Failed to create consumer: %v, status: %d", err, resp.StatusCode)
 		return nil, fmt.Errorf("failed to create consumer: %v", err)
 	}
-	
+
 	// Subscribe to topic
 	topics := kafka_bridge.NewTopics()
 	topics.SetTopics([]string{topic})
-	
+
 	resp, err = cm.kafkaClient.Subscribe(ctx, groupID, consumerName, *topics)
 	if err != nil || resp.StatusCode != 204 {
 		log.Printf("Failed to subscribe to topic: %v, status: %d", err, resp.StatusCode)
@@ -180,7 +122,7 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 		cm.kafkaClient.DeleteConsumer(ctx, groupID, consumerName)
 		return nil, fmt.Errorf("failed to subscribe to topic: %v", err)
 	}
-	
+
 	// Create consumer info
 	consumerInfo := &KafkaConsumerInfo{
 		GroupId:  groupID,
@@ -189,14 +131,14 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 		BaseURI:  createdConsumer.GetBaseUri(),
 		PodName:  podName,
 	}
-	
+
 	// Store in Redis and local cache
 	cm.storeConsumerInfo(ctx, topic, consumerInfo)
-	
+
 	cm.mu.Lock()
 	cm.consumers[topic] = consumerInfo
 	cm.mu.Unlock()
-	
+
 	log.Printf("Successfully created consumer %s for topic %s", consumerName, topic)
 	return consumerInfo, nil
 }
@@ -217,7 +159,7 @@ func (cm *ConsumerManager) storeConsumerInfo(ctx context.Context, topic string, 
 func (cm *ConsumerManager) CleanupConsumers(ctx context.Context) {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
-	
+
 	for topic, info := range cm.consumers {
 		_, err := cm.kafkaClient.DeleteConsumer(ctx, info.GroupId, info.Name)
 		if err != nil {
@@ -226,7 +168,7 @@ func (cm *ConsumerManager) CleanupConsumers(ctx context.Context) {
 			log.Printf("Successfully deleted consumer for topic %s", topic)
 		}
 	}
-	
+
 	cm.consumers = make(map[string]*KafkaConsumerInfo)
 }
 
@@ -234,7 +176,7 @@ func (cm *ConsumerManager) CleanupConsumers(ctx context.Context) {
 func (cm *ConsumerManager) GetConsumerInfo(topic string) (*KafkaConsumerInfo, bool) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
-	
+
 	info, exists := cm.consumers[topic]
 	return info, exists
 }
@@ -242,6 +184,11 @@ func (cm *ConsumerManager) GetConsumerInfo(topic string) (*KafkaConsumerInfo, bo
 // Shutdown gracefully shuts down the consumer manager
 func (cm *ConsumerManager) Shutdown(ctx context.Context) {
 	cm.CleanupConsumers(ctx)
+}
+
+// GetKafkaBridgeClient returns the Kafka Bridge client used by this consumer manager
+func (cm *ConsumerManager) GetKafkaBridgeClient() KafkaBridgeClient {
+	return cm.kafkaClient
 }
 
 // AddConsumerForTesting adds a consumer to the manager's cache for testing purposes

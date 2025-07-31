@@ -69,10 +69,10 @@ func (mr *MockKafkaBridgeClientMockRecorder) DeleteConsumer(ctx, groupID, consum
 }
 
 // ListSubscriptions mocks base method.
-func (m *MockKafkaBridgeClient) ListSubscriptions(ctx context.Context, groupID, consumerName string) (interface{}, *http.Response, error) {
+func (m *MockKafkaBridgeClient) ListSubscriptions(ctx context.Context, groupID, consumerName string) (any, *http.Response, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListSubscriptions", ctx, groupID, consumerName)
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(*http.Response)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -85,10 +85,10 @@ func (mr *MockKafkaBridgeClientMockRecorder) ListSubscriptions(ctx, groupID, con
 }
 
 // Poll mocks base method.
-func (m *MockKafkaBridgeClient) Poll(ctx context.Context, groupID, consumerName string, maxBytes int) ([]map[string]interface{}, error) {
+func (m *MockKafkaBridgeClient) Poll(ctx context.Context, groupID, consumerName string, maxBytes int) ([]map[string]any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Poll", ctx, groupID, consumerName, maxBytes)
-	ret0, _ := ret[0].([]map[string]interface{})
+	ret0, _ := ret[0].([]map[string]any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -181,7 +181,7 @@ func (mr *MockRedisClientMockRecorder) Ping(ctx interface{}) *gomock.Call {
 }
 
 // Set mocks base method.
-func (m *MockRedisClient) Set(ctx context.Context, key, value string, expiration interface{}) error {
+func (m *MockRedisClient) Set(ctx context.Context, key, value string, expiration any) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set", ctx, key, value, expiration)
 	ret0, _ := ret[0].(error)
@@ -242,6 +242,20 @@ func (m *MockConsumerManagerInterface) GetConsumerInfo(topic string) (*listener.
 func (mr *MockConsumerManagerInterfaceMockRecorder) GetConsumerInfo(topic interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConsumerInfo", reflect.TypeOf((*MockConsumerManagerInterface)(nil).GetConsumerInfo), topic)
+}
+
+// GetKafkaBridgeClient mocks base method.
+func (m *MockConsumerManagerInterface) GetKafkaBridgeClient() listener.KafkaBridgeClient {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetKafkaBridgeClient")
+	ret0, _ := ret[0].(listener.KafkaBridgeClient)
+	return ret0
+}
+
+// GetKafkaBridgeClient indicates an expected call of GetKafkaBridgeClient.
+func (mr *MockConsumerManagerInterfaceMockRecorder) GetKafkaBridgeClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetKafkaBridgeClient", reflect.TypeOf((*MockConsumerManagerInterface)(nil).GetKafkaBridgeClient))
 }
 
 // InitializeConsumer mocks base method.

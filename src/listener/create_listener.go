@@ -2,11 +2,8 @@ package listener
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 
 	"github.com/redis/go-redis/v9"
 
@@ -72,8 +69,11 @@ func CreateListener(ctx context.Context, q dao.Query, rdb *redis.Client) {
 		return
 	}
 
+	// Get the Kafka Bridge client from the consumer manager
+	client := consumerManager.GetKafkaBridgeClient()
+
 	// Poll for messages
-	messages, err := PollMessages(consumerInfo)
+	messages, err := PollMessages(client, consumerInfo)
 	if err != nil {
 		log.Printf("Error polling messages: %v", err)
 		return
@@ -85,37 +85,13 @@ func CreateListener(ctx context.Context, q dao.Query, rdb *redis.Client) {
 	}
 }
 
-// HTTPGet is a variable that holds the http.Get function for easier mocking in tests
-var HTTPGet = http.Get
-
-// PollMessages fetches messages from Kafka Bridge API
-func PollMessages(consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
-	// Construct URL for polling messages
-	consumerURL := fmt.Sprintf(
-		"%s/consumers/%s/instances/%s/records?max_bytes=%d",
-		constant_kafka.KAFKA_BRIDGE_HOST, consumerInfo.GroupId, consumerInfo.Name, consumerInfo.MaxBytes,
-	)
-
-	// Make HTTP request
-	resp, err := HTTPGet(consumerURL)
+// PollMessages fetches messages from Kafka Bridge API using the KafkaBridgeClient interface
+func PollMessages(client KafkaBridgeClient, consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
+	// Use the Poll method from the KafkaBridgeClient interface
+	ctx := context.Background()
+	messages, err := client.Poll(ctx, consumerInfo.GroupId, consumerInfo.Name, consumerInfo.MaxBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to poll for messages: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to poll for messages, status: %d", resp.StatusCode)
-	}
-
-	// Parse response
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	var messages []map[string]any
-	if err := json.Unmarshal(bytes, &messages); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	return messages, nil

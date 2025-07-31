@@ -10,6 +10,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron/v3"
+	constant_redis "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/redis"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/listener"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/server"
 )
@@ -24,7 +25,7 @@ func main() {
 
 	// Initialize Redis client
 	rdb := redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_ADDR"),
+		Addr: constant_redis.REDIS_ADDR,
 	})
 	if _, err := rdb.Ping(context.Background()).Result(); err != nil {
 		log.Printf("Warning: Redis connection failed: %v", err)
@@ -49,12 +50,12 @@ func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	// Shutdown services in order
 	c.Stop()
 	listener.ShutdownConsumerManager(ctx)
 	srv.Shutdown(ctx)
-	
+
 	// Close Redis connection
 	if err := rdb.Close(); err != nil {
 		log.Printf("Error closing Redis connection: %v", err)

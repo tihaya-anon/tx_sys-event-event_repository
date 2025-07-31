@@ -13,9 +13,9 @@ import (
 type KafkaBridgeClient interface {
 	CreateConsumer(ctx context.Context, groupID string, consumer kafka_bridge.Consumer) (*kafka_bridge.CreatedConsumer, *http.Response, error)
 	Subscribe(ctx context.Context, groupID string, consumerName string, topics kafka_bridge.Topics) (*http.Response, error)
-	ListSubscriptions(ctx context.Context, groupID string, consumerName string) (interface{}, *http.Response, error)
+	ListSubscriptions(ctx context.Context, groupID string, consumerName string) (any, *http.Response, error)
 	DeleteConsumer(ctx context.Context, groupID string, consumerName string) (*http.Response, error)
-	Poll(ctx context.Context, groupID string, consumerName string, maxBytes int) ([]map[string]interface{}, error)
+	Poll(ctx context.Context, groupID string, consumerName string, maxBytes int) ([]map[string]any, error)
 }
 
 // RedisClient defines the interface for Redis operations
@@ -23,7 +23,7 @@ type KafkaBridgeClient interface {
 //go:generate mockgen -source=interfaces.go -destination=mock/interfaces.go -package=mock
 type RedisClient interface {
 	Get(ctx context.Context, key string) (string, error)
-	Set(ctx context.Context, key string, value string, expiration interface{}) error
+	Set(ctx context.Context, key string, value string, expiration any) error
 	Ping(ctx context.Context) error
 	Close() error
 }
@@ -36,4 +36,5 @@ type ConsumerManagerInterface interface {
 	CleanupConsumers(ctx context.Context)
 	GetConsumerInfo(topic string) (*KafkaConsumerInfo, bool)
 	Shutdown(ctx context.Context)
+	GetKafkaBridgeClient() KafkaBridgeClient
 }
