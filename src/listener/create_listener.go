@@ -17,7 +17,6 @@ import (
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/mapping"
 )
 
-
 // Global consumer manager instance
 var consumerManager ConsumerManagerInterface
 
@@ -37,14 +36,14 @@ func InitConsumerManager(ctx context.Context, rdb *redis.Client) {
 	if consumerManager != nil {
 		return
 	}
-	
+
 	// Create Kafka Bridge API client
 	config := kafka_bridge.NewConfiguration()
 	config.Servers = []kafka_bridge.ServerConfiguration{
 		{URL: constant_kafka.KAFKA_BRIDGE_HOST},
 	}
 	client := kafka_bridge.NewAPIClient(config)
-	
+
 	// Create consumer manager
 	consumerManager = NewConsumerManager(client, rdb)
 	log.Println("Initialized Kafka consumer manager")
@@ -65,21 +64,21 @@ func CreateListener(ctx context.Context, q dao.Query, rdb *redis.Client) {
 	if consumerManager == nil && rdb != nil {
 		InitConsumerManager(ctx, rdb)
 	}
-	
+
 	// Get or create consumer for the topic
 	consumerInfo, err := consumerManager.InitializeConsumer(ctx, constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC)
 	if err != nil {
 		log.Printf("Failed to initialize consumer: %v", err)
 		return
 	}
-	
+
 	// Poll for messages
 	messages, err := PollMessages(consumerInfo)
 	if err != nil {
 		log.Printf("Error polling messages: %v", err)
 		return
 	}
-	
+
 	// Process messages asynchronously
 	for _, record := range messages {
 		go SaveRecord(ctx, q, record)
@@ -96,39 +95,34 @@ func PollMessages(consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
 		"%s/consumers/%s/instances/%s/records?max_bytes=%d",
 		constant_kafka.KAFKA_BRIDGE_HOST, consumerInfo.GroupId, consumerInfo.Name, consumerInfo.MaxBytes,
 	)
-	
+
 	// Make HTTP request
 	resp, err := HTTPGet(consumerURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to poll for messages: %w", err)
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to poll for messages, status: %d", resp.StatusCode)
 	}
-	
+
 	// Parse response
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
-	
+
 	var messages []map[string]any
 	if err := json.Unmarshal(bytes, &messages); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
-	
+
 	return messages, nil
 }
 
-// Query is an interface for the dao.Query to make it easier to mock
-type Query interface {
-	CreateEvent(ctx context.Context, arg db.CreateEventParams) error
-}
-
 // SaveRecord processes and saves a Kafka record
-func SaveRecord(ctx context.Context, q Query, record map[string]any) {
+func SaveRecord(ctx context.Context, q dao.Query, record map[string]any) {
 	if record["topic"] != constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC {
 		return
 	}

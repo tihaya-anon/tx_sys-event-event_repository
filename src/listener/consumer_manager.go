@@ -2,6 +2,7 @@ package listener
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	constant_kafka "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
-	constant_redis "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/redis"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/kafka_bridge"
 )
 
@@ -109,20 +109,24 @@ func (cm *ConsumerManager) InitializeConsumer(ctx context.Context, topic string)
 	cm.mu.RUnlock()
 
 	// Try to get from Redis and validate it still exists
-	// Get the Redis client implementation from our interface
-	redisImpl, ok := cm.redisClient.(*redisClientImpl)
-	if !ok {
-		return nil, fmt.Errorf("invalid Redis client implementation")
+	// Use the interface methods instead of type assertion
+	consumerInfoJSON, err := cm.redisClient.Get(ctx, fmt.Sprintf("consumer:%s", topic))
+	var consumerInfo *KafkaConsumerInfo
+	if err == nil && consumerInfoJSON != "" {
+		consumerInfo = &KafkaConsumerInfo{}
+		if err := json.Unmarshal([]byte(consumerInfoJSON), consumerInfo); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal consumer info: %w", err)
+		}
 	}
-	consumerInfo, err := getConsumerInfoByTopic(ctx, redisImpl.rdb, topic)
 	if err == nil && consumerInfo != nil {
 		// Verify the consumer still exists by checking subscriptions
 		_, resp, err := cm.kafkaClient.ListSubscriptions(ctx, consumerInfo.GroupId, consumerInfo.Name)
 		if err == nil && resp.StatusCode == 200 {
-			// Store in local cache
+			// Store in local cache and Redis
 			cm.mu.Lock()
+			defer cm.mu.Unlock()
 			cm.consumers[topic] = consumerInfo
-			cm.mu.Unlock()
+			cm.storeConsumerInfo(ctx, topic, consumerInfo)
 			return consumerInfo, nil
 		}
 	}
@@ -187,7 +191,7 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 	}
 	
 	// Store in Redis and local cache
-	cm.storeConsumerInfoInRedis(ctx, topic, consumerInfo)
+	cm.storeConsumerInfo(ctx, topic, consumerInfo)
 	
 	cm.mu.Lock()
 	cm.consumers[topic] = consumerInfo
@@ -197,22 +201,16 @@ func (cm *ConsumerManager) CreateConsumer(ctx context.Context, topic string) (*K
 	return consumerInfo, nil
 }
 
-// storeConsumerInfoInRedis stores consumer information in Redis
-func (cm *ConsumerManager) storeConsumerInfoInRedis(ctx context.Context, topic string, info *KafkaConsumerInfo) {
-	// Store required consumer info
-	groupIdKey, nameKey, maxBytesKey := constant_redis.GetConsumerInfoKey(topic)
-	expiration := 24 * time.Hour
-	
-	cm.redisClient.Set(ctx, groupIdKey, info.GroupId, expiration)
-	cm.redisClient.Set(ctx, nameKey, info.Name, expiration)
-	cm.redisClient.Set(ctx, maxBytesKey, fmt.Sprintf("%d", info.MaxBytes), expiration)
-	
-	// Store additional metadata for observability
-	baseUriKey := fmt.Sprintf("%s:baseuri", topic)
-	podNameKey := fmt.Sprintf("%s:podname", topic)
-	
-	cm.redisClient.Set(ctx, baseUriKey, info.BaseURI, expiration)
-	cm.redisClient.Set(ctx, podNameKey, info.PodName, expiration)
+// storeConsumerInfo stores consumer info in Redis
+func (cm *ConsumerManager) storeConsumerInfo(ctx context.Context, topic string, consumerInfo *KafkaConsumerInfo) error {
+	// Convert consumer info to JSON
+	consumerInfoJSON, err := json.Marshal(consumerInfo)
+	if err != nil {
+		return fmt.Errorf("failed to marshal consumer info: %w", err)
+	}
+
+	// Store in Redis using the interface
+	return cm.redisClient.Set(ctx, fmt.Sprintf("consumer:%s", topic), string(consumerInfoJSON), 24*time.Hour)
 }
 
 // CleanupConsumers deletes all consumers created by this manager

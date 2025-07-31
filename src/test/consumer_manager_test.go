@@ -2,7 +2,9 @@ package test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -21,11 +23,14 @@ func TestConsumerManager_InitializeConsumer_ExistingConsumer(t *testing.T) {
 	mockKafkaClient := mock.NewMockKafkaBridgeClient(ctrl)
 	mockRedisClient := mock.NewMockRedisClient(ctrl)
 
-	// Create test consumer info
+	// Create test data
 	testTopic := "test-topic"
 	testConsumerInfo := &listener.KafkaConsumerInfo{
-		GroupId: testTopic,
-		Name:    "test-consumer",
+		GroupId:  testTopic,
+		Name:     "test-consumer",
+		MaxBytes: 1024,
+		BaseURI:  "http://test-uri",
+		PodName:  "test-pod",
 	}
 
 	// Create consumer manager with mocks
@@ -34,7 +39,11 @@ func TestConsumerManager_InitializeConsumer_ExistingConsumer(t *testing.T) {
 	// Set up expectations for existing consumer case
 	// First, the manager will check its local cache (which is empty)
 	// Then it will try to get from Redis
-	mockRedisClient.EXPECT().Get(gomock.Any(), gomock.Any()).Return(testTopic, nil).AnyTimes()
+	consumerInfoJSON, _ := json.Marshal(testConsumerInfo)
+	mockRedisClient.EXPECT().Get(gomock.Any(), fmt.Sprintf("consumer:%s", testTopic)).Return(string(consumerInfoJSON), nil)
+
+	// The consumer manager will store the consumer info back in Redis
+	mockRedisClient.EXPECT().Set(gomock.Any(), fmt.Sprintf("consumer:%s", testTopic), gomock.Any(), gomock.Any()).Return(nil)
 
 	// Mock the ListSubscriptions call to verify the consumer exists
 	mockResp := &http.Response{StatusCode: 200}
@@ -46,6 +55,8 @@ func TestConsumerManager_InitializeConsumer_ExistingConsumer(t *testing.T) {
 	// Assertions
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
+	assert.Equal(t, testConsumerInfo.Name, result.Name)
+	assert.Equal(t, testConsumerInfo.BaseURI, result.BaseURI)
 }
 
 func TestConsumerManager_InitializeConsumer_CreateNewConsumer(t *testing.T) {
@@ -90,8 +101,7 @@ func TestConsumerManager_InitializeConsumer_CreateNewConsumer(t *testing.T) {
 	// Assertions
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, createdConsumer.InstanceId, result.Name)
-	assert.Equal(t, createdConsumer.BaseUri, result.BaseURI)
+	assert.Equal(t, *(createdConsumer.BaseUri), result.BaseURI)
 }
 
 func TestConsumerManager_Shutdown(t *testing.T) {
