@@ -2,6 +2,7 @@ package listener
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
@@ -10,18 +11,14 @@ import (
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/util"
 )
 
-type ConsumerInfo struct {
-	GroupId  string
-	Name     string
-	MaxBytes int
-}
+// KafkaConsumerInfo is defined in types.go
 
 // TODO unimplemented
 func defaultFetch(ctx context.Context) wrapper.FetchResp {
 	return wrapper.FetchResp{}
 }
 
-func getConsumerInfoByTopic(ctx context.Context, rdb *redis.Client, topic string) (*ConsumerInfo, error) {
+func getConsumerInfoByTopic(ctx context.Context, rdb *redis.Client, topic string) (*KafkaConsumerInfo, error) {
 	groupIdKey, nameKey, maxBytesKey := constant_redis.GetConsumerInfoKey(topic)
 	var (
 		groupId     string
@@ -64,9 +61,18 @@ func getConsumerInfoByTopic(ctx context.Context, rdb *redis.Client, topic string
 	if err := concurrency.Err(); err != nil {
 		return nil, err
 	}
-	return &ConsumerInfo{
+	// Try to get additional metadata (may not exist for older consumers)
+	baseUriKey := fmt.Sprintf("%s:baseuri", topic)
+	podNameKey := fmt.Sprintf("%s:podname", topic)
+	
+	baseURI, _ := wrapper.Get(ctx, rdb, baseUriKey, defaultFetch)
+	podName, _ := wrapper.Get(ctx, rdb, podNameKey, defaultFetch)
+	
+	return &KafkaConsumerInfo{
 		GroupId:  groupId,
 		Name:     name,
 		MaxBytes: maxBytesInt,
+		BaseURI:  baseURI,
+		PodName:  podName,
 	}, nil
 }
