@@ -245,3 +245,10 @@ func (cm *ConsumerManager) GetConsumerInfo(topic string) (*KafkaConsumerInfo, bo
 func (cm *ConsumerManager) Shutdown(ctx context.Context) {
 	cm.CleanupConsumers(ctx)
 }
+
+// AddConsumerForTesting adds a consumer to the manager's cache for testing purposes
+func (cm *ConsumerManager) AddConsumerForTesting(topic string, info *KafkaConsumerInfo) {
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.consumers[topic] = info
+}

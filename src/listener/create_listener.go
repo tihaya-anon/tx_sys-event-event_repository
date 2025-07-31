@@ -19,7 +19,17 @@ import (
 
 
 // Global consumer manager instance
-var consumerManager *ConsumerManager
+var consumerManager ConsumerManagerInterface
+
+// SetConsumerManagerForTesting sets the consumer manager for testing
+func SetConsumerManagerForTesting(cm ConsumerManagerInterface) {
+	consumerManager = cm
+}
+
+// ResetConsumerManagerForTesting resets the consumer manager after testing
+func ResetConsumerManagerForTesting() {
+	consumerManager = nil
+}
 
 // InitConsumerManager initializes the consumer manager with the Kafka Bridge client
 func InitConsumerManager(ctx context.Context, rdb *redis.Client) {
@@ -64,7 +74,7 @@ func CreateListener(ctx context.Context, q dao.Query, rdb *redis.Client) {
 	}
 	
 	// Poll for messages
-	messages, err := pollMessages(consumerInfo)
+	messages, err := PollMessages(consumerInfo)
 	if err != nil {
 		log.Printf("Error polling messages: %v", err)
 		return
@@ -72,12 +82,15 @@ func CreateListener(ctx context.Context, q dao.Query, rdb *redis.Client) {
 	
 	// Process messages asynchronously
 	for _, record := range messages {
-		go saveRecord(ctx, q, record)
+		go SaveRecord(ctx, q, record)
 	}
 }
 
-// pollMessages fetches messages from Kafka Bridge API
-func pollMessages(consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
+// HTTPGet is a variable that holds the http.Get function for easier mocking in tests
+var HTTPGet = http.Get
+
+// PollMessages fetches messages from Kafka Bridge API
+func PollMessages(consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
 	// Construct URL for polling messages
 	consumerURL := fmt.Sprintf(
 		"%s/consumers/%s/instances/%s/records?max_bytes=%d",
@@ -85,7 +98,7 @@ func pollMessages(consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
 	)
 	
 	// Make HTTP request
-	resp, err := http.Get(consumerURL)
+	resp, err := HTTPGet(consumerURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to poll for messages: %w", err)
 	}
@@ -109,7 +122,13 @@ func pollMessages(consumerInfo *KafkaConsumerInfo) ([]map[string]any, error) {
 	return messages, nil
 }
 
-func saveRecord(ctx context.Context, q dao.Query, record map[string]any) {
+// Query is an interface for the dao.Query to make it easier to mock
+type Query interface {
+	CreateEvent(ctx context.Context, arg db.CreateEventParams) error
+}
+
+// SaveRecord processes and saves a Kafka record
+func SaveRecord(ctx context.Context, q Query, record map[string]any) {
 	if record["topic"] != constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC {
 		return
 	}
