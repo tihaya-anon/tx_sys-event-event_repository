@@ -1,4 +1,4 @@
-package postgre
+package postgre_constant
 
 import (
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/util"
