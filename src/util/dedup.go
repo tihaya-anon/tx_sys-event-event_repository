@@ -22,7 +22,6 @@ const (
 
 func IsDup(ctx context.Context, q Reader, dedupKey string) (*db.Event, DedupResult, error) {
 	event, err := q.ReadEventByDedupKey(ctx, pgtype.Text{String: dedupKey, Valid: true})
-	// error occurred
 	if err != nil && errors.Is(err, pgx.ErrNoRows) { //expected ErrNoRows, means not duplicated
 		return nil, DEDUP_RESULT_NEW, nil
 	}

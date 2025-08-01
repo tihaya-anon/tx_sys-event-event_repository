@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/bwmarrin/snowflake"
 	kafka_constant "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/dao"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
@@ -35,9 +36,14 @@ func (s *EventRepositoryServer) CreateEvent(ctx context.Context, req *kafka.Crea
 			dbEvent, result, err := util.IsDup(ctx_, q, dedupKey)
 			switch result {
 			case util.DEDUP_RESULT_NEW:
-				//TODO generate uuid
-				newEventIds[i] = "uuid-gen"
-				eventIdWrappers[i] = &pb.EventIdWrapper{EventId: "uuid-gen", Success: true, Error: ""}
+				//TODO determine node id
+				node, err := snowflake.NewNode(1)
+				if err != nil {
+					return
+				}
+				uuid := node.Generate().String()
+				newEventIds[i] = uuid
+				eventIdWrappers[i] = &pb.EventIdWrapper{EventId: uuid, Success: true, Error: ""}
 			case util.DEDUP_RESULT_DUP:
 				eventIdWrappers[i] = &pb.EventIdWrapper{EventId: dbEvent.EventID, Success: true, Error: ""}
 			case util.DEDUP_RESULT_ERROR:
