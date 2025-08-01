@@ -8,11 +8,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/kafka_bridge"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/server"
 )
 
 func main() {
-	srv, err := server.NewServer(50051)
+	srv, err := server.NewServer(50051, kafka_bridge.NewAPIClient(kafka_bridge.NewConfiguration()))
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}

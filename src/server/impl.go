@@ -1,17 +1,15 @@
 package server
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"log"
+	"sync"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/bwmarrin/snowflake"
-	constant_kafka "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
+	kafka_constant "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/kafka"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/dao"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/kafka_bridge"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb/kafka"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/util"
@@ -20,55 +18,94 @@ import (
 type EventRepositoryServer struct {
 	r dao.Reader
 	q dao.Query
+	c *kafka_bridge.APIClient
 	kafka.UnimplementedEventRepositoryServer
 }
 
 // CreateEvent implements kafka.EventRepositoryServer.
-func (g *EventRepositoryServer) CreateEvent(ctx context.Context, req *kafka.CreateEventReq) (*kafka.CreateEventResp, error) {
-	event, err := util.IsDup(ctx, g.q, req.Event.DedupKey)
-	if err != nil { // error occurred
-		return nil, err
+func (s *EventRepositoryServer) CreateEvent(ctx context.Context, req *kafka.CreateEventReq) (*kafka.CreateEventResp, error) {
+	eventSize := len(req.Events)
+	eventIdWrappers := make([]*pb.EventIdWrapper, eventSize)
+	newEventIds := make(map[int]string, eventSize)
+	wg := sync.WaitGroup{}
+	for i, event := range req.Events {
+		wg.Add(1)
+		go func(i int, ctx_ context.Context, q dao.Query, dedupKey string) {
+			defer wg.Done()
+			dbEvent, result, err := util.IsDup(ctx_, q, dedupKey)
+			switch result {
+			case util.DEDUP_RESULT_NEW:
+				//TODO generate uuid
+				newEventIds[i] = "uuid-gen"
+				eventIdWrappers[i] = &pb.EventIdWrapper{EventId: "uuid-gen", Success: true, Error: ""}
+			case util.DEDUP_RESULT_DUP:
+				eventIdWrappers[i] = &pb.EventIdWrapper{EventId: dbEvent.EventID, Success: true, Error: ""}
+			case util.DEDUP_RESULT_ERROR:
+				eventIdWrappers[i] = &pb.EventIdWrapper{EventId: "", Success: false, Error: err.Error()}
+			}
+		}(i, ctx, s.q, event.DedupKey)
 	}
-	if event != nil { // duplicated
-		return &kafka.CreateEventResp{EventId: event.EventID}, nil
+	wg.Wait()
+	producerRecords := make([]kafka_bridge.ProducerRecord, 0)
+	for i, newEventId := range newEventIds {
+		wg.Add(1)
+		go func(i int, newEventId string) {
+			defer wg.Done()
+			pr := util.BuildProducerRecord(req.Events[i], &newEventId)
+			if pr == nil {
+				return
+			}
+			producerRecords = append(producerRecords, *pr)
+		}(i, newEventId)
 	}
-	//TODO determine the snowflake node id
-	node, err := snowflake.NewNode(1)
+	wg.Wait()
+	producerRecordList := kafka_bridge.NewProducerRecordList()
+	producerRecordList.SetRecords(producerRecords)
+	_, r, err := s.c.TopicsAPI.Send(ctx, kafka_constant.KAFKA_BRIDGE_CREATE_TOPIC).ProducerRecordList(*producerRecordList).Async(true).Execute()
 	if err != nil {
-		return nil, err
+		for i, newEventId := range newEventIds {
+			log.Printf("ID: %s, Error: %v, Full Response: %v", newEventId, err, r)
+			eventIdWrappers[i] = &pb.EventIdWrapper{EventId: newEventId, Success: false, Error: err.Error()}
+		}
 	}
-	id := node.Generate()
-	go func(url string, event *pb.Event) {
-		pr := util.BuildProducerRecord(event)
-		body, _ := json.Marshal(pr)
-		http.Post(url, constant_kafka.KAFKA_BRIDGE_JSON, bytes.NewBuffer(body))
-	}(fmt.Sprintf("%s/topics/%s", constant_kafka.KAFKA_BRIDGE_HOST, constant_kafka.KAFKA_BRIDGE_CREATE_TOPIC), req.Event)
-	return &kafka.CreateEventResp{EventId: id.String()}, nil
+	return &kafka.CreateEventResp{EventIds: eventIdWrappers}, nil
 }
 
 // DeadEvent implements kafka.EventRepositoryServer.
-func (g *EventRepositoryServer) DeadEvent(ctx context.Context, req *kafka.DeadEventReq) (*kafka.DeadEventResp, error) {
-	err := g.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: req.EventId, Status: db.DeliveryStatusDEAD})
-	if err != nil {
-		return nil, err
+func (s *EventRepositoryServer) DeadEvent(ctx context.Context, req *kafka.DeadEventReq) (*kafka.DeadEventResp, error) {
+	eventIds := make([]*pb.EventIdWrapper, len(req.EventIds))
+	wg := sync.WaitGroup{}
+	for _, eventId := range req.EventIds {
+		wg.Add(1)
+		go func(eventId string) {
+			defer wg.Done()
+			eventIds = append(eventIds, s.updateEventStatus(ctx, eventId, db.DeliveryStatusDEAD))
+		}(eventId)
 	}
-	return &kafka.DeadEventResp{}, nil
+	wg.Wait()
+	return &kafka.DeadEventResp{EventIds: eventIds}, nil
 }
 
 // DeliveredEvent implements kafka.EventRepositoryServer.
-func (g *EventRepositoryServer) DeliveredEvent(ctx context.Context, req *kafka.DeliveredEventReq) (*kafka.DeliveredEventResp, error) {
-	err := g.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: req.EventId, Status: db.DeliveryStatusDELIVERED})
-	if err != nil {
-		return nil, err
+func (s *EventRepositoryServer) DeliveredEvent(ctx context.Context, req *kafka.DeliveredEventReq) (*kafka.DeliveredEventResp, error) {
+	eventIds := make([]*pb.EventIdWrapper, len(req.EventIds))
+	wg := sync.WaitGroup{}
+	for _, eventId := range req.EventIds {
+		wg.Add(1)
+		go func(eventId string) {
+			defer wg.Done()
+			eventIds = append(eventIds, s.updateEventStatus(ctx, eventId, db.DeliveryStatusDELIVERED))
+		}(eventId)
 	}
-	return &kafka.DeliveredEventResp{}, nil
+	wg.Wait()
+	return &kafka.DeliveredEventResp{EventIds: eventIds}, nil
 }
 
 // ReadEvent implements kafka.EventRepositoryServer.
-func (g *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEventReq) (*kafka.ReadEventResp, error) {
+func (s *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEventReq) (*kafka.ReadEventResp, error) {
 	for _, f := range req.Query.Filters {
 		if filterWithEventId(f) {
-			event, err := g.readEventByEventId(ctx, f.Values[0])
+			event, err := s.readEventByEventId(ctx, f.Values[0])
 			if err != nil {
 				return nil, err
 			}
@@ -83,11 +120,11 @@ func (g *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEv
 	if err != nil {
 		return nil, err
 	}
-	dbEvents, err := g.r.Select(ctx, pageQuery.PageSql, pageQuery.PageArgs...)
+	dbEvents, err := s.r.Select(ctx, pageQuery.PageSql, pageQuery.PageArgs...)
 	if err != nil {
 		return nil, err
 	}
-	totalSize, err := g.r.Count(ctx, pageQuery.TotalSql, pageQuery.TotalArgs...)
+	totalSize, err := s.r.Count(ctx, pageQuery.TotalSql, pageQuery.TotalArgs...)
 	if err != nil {
 		return nil, err
 	}
@@ -99,14 +136,28 @@ func (g *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEv
 }
 
 // RetryingEvent implements kafka.EventRepositoryServer.
-func (g *EventRepositoryServer) RetryingEvent(ctx context.Context, req *kafka.RetryingEventReq) (*kafka.RetryingEventResp, error) {
-	err := g.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: req.EventId, Status: db.DeliveryStatusRETRYING})
-	if err != nil {
-		return nil, err
+func (s *EventRepositoryServer) RetryingEvent(ctx context.Context, req *kafka.RetryingEventReq) (*kafka.RetryingEventResp, error) {
+	eventIds := make([]*pb.EventIdWrapper, len(req.EventIds))
+	wg := sync.WaitGroup{}
+	for _, eventId := range req.EventIds {
+		wg.Add(1)
+		go func(eventId string) {
+			defer wg.Done()
+			eventIds = append(eventIds, s.updateEventStatus(ctx, eventId, db.DeliveryStatusRETRYING))
+		}(eventId)
 	}
-	return &kafka.RetryingEventResp{}, nil
+	wg.Wait()
+	return &kafka.RetryingEventResp{EventIds: eventIds}, nil
 }
 
-func NewGrpcHandler(q dao.Query, r dao.Reader) *EventRepositoryServer {
-	return &EventRepositoryServer{q: q, r: r}
+func (s *EventRepositoryServer) updateEventStatus(ctx context.Context, eventId string, status db.DeliveryStatus) *pb.EventIdWrapper {
+	err := s.q.UpdateEventStatus(ctx, db.UpdateEventStatusParams{EventID: eventId, Status: status})
+	if err != nil {
+		return &pb.EventIdWrapper{EventId: eventId, Success: false, Error: err.Error()}
+	}
+	return &pb.EventIdWrapper{EventId: eventId, Success: true, Error: ""}
+}
+
+func NewGrpcHandler(q dao.Query, r dao.Reader, c *kafka_bridge.APIClient) *EventRepositoryServer {
+	return &EventRepositoryServer{q: q, r: r, c: c}
 }

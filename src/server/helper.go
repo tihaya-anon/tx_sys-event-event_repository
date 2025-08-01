@@ -54,8 +54,8 @@ func paraMapping(dbEvents []db.Event) ([]*pb.Event, error) {
 	}
 }
 
-func (g *EventRepositoryServer) readEventByEventId(ctx context.Context, eventId string) (*pb.Event, error) {
-	dbEvent, err := g.q.ReadEventByEventId(ctx, eventId)
+func (s *EventRepositoryServer) readEventByEventId(ctx context.Context, eventId string) (*pb.Event, error) {
+	dbEvent, err := s.q.ReadEventByEventId(ctx, eventId)
 	if err != nil {
 		return nil, err
 	}

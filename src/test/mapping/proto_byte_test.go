@@ -19,7 +19,7 @@ func TestPB2BytesAndBack(t *testing.T) {
 		Source:        "test-source",
 		CreatedAt:     time.Now().Unix(),
 		Status:        pb.Event_PENDING,
-		Payload:       []byte(`{"test": "data"}`),
+		Payload:       `{"test": "data"}`,
 		DedupKey:      "dedup-key-123",
 		CorrelationId: "correlation-123",
 	}

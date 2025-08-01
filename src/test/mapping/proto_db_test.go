@@ -24,7 +24,7 @@ func createTestPBEvent() *pb.Event {
 		RetryCount:    0,
 		DedupKey:      "dedup-key-123",
 		Metadata:      map[string]string{"key1": "value1", "key2": "value2"},
-		Payload:       []byte(`{"test": "data"}`),
+		Payload:       `{"test": "data"}`,
 		TargetService: "test-service",
 		CorrelationId: "correlation-123",
 	}
@@ -43,7 +43,7 @@ func createTestDBEvent() *db.Event {
 		RetryCount:    pgtype.Int4{Int32: 0, Valid: true},
 		DedupKey:      pgtype.Text{String: "dedup-key-123", Valid: true},
 		Metadata:      metadata,
-		Payload:       []byte(`{"test": "data"}`),
+		Payload:       pgtype.Text{String: `{"test": "data"}`, Valid: true},
 		TargetService: pgtype.Text{String: "test-service", Valid: true},
 		CorrelationID: pgtype.Text{String: "correlation-123", Valid: true},
 	}

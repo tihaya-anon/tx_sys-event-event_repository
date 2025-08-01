@@ -24,7 +24,7 @@ const (
 
 type CreateEventReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Event         *pb.Event              `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
+	Events        []*pb.Event            `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -59,16 +59,16 @@ func (*CreateEventReq) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *CreateEventReq) GetEvent() *pb.Event {
+func (x *CreateEventReq) GetEvents() []*pb.Event {
 	if x != nil {
-		return x.Event
+		return x.Events
 	}
 	return nil
 }
 
 type CreateEventResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	EventIds      []*pb.EventIdWrapper   `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -103,16 +103,16 @@ func (*CreateEventResp) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateEventResp) GetEventId() string {
+func (x *CreateEventResp) GetEventIds() []*pb.EventIdWrapper {
 	if x != nil {
-		return x.EventId
+		return x.EventIds
 	}
-	return ""
+	return nil
 }
 
 type RetryingEventReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	EventIds      []string               `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -147,15 +147,16 @@ func (*RetryingEventReq) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RetryingEventReq) GetEventId() string {
+func (x *RetryingEventReq) GetEventIds() []string {
 	if x != nil {
-		return x.EventId
+		return x.EventIds
 	}
-	return ""
+	return nil
 }
 
 type RetryingEventResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventIds      []*pb.EventIdWrapper   `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -190,9 +191,16 @@ func (*RetryingEventResp) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{3}
 }
 
+func (x *RetryingEventResp) GetEventIds() []*pb.EventIdWrapper {
+	if x != nil {
+		return x.EventIds
+	}
+	return nil
+}
+
 type DeliveredEventReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	EventIds      []string               `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -227,15 +235,16 @@ func (*DeliveredEventReq) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *DeliveredEventReq) GetEventId() string {
+func (x *DeliveredEventReq) GetEventIds() []string {
 	if x != nil {
-		return x.EventId
+		return x.EventIds
 	}
-	return ""
+	return nil
 }
 
 type DeliveredEventResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventIds      []*pb.EventIdWrapper   `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -270,9 +279,16 @@ func (*DeliveredEventResp) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{5}
 }
 
+func (x *DeliveredEventResp) GetEventIds() []*pb.EventIdWrapper {
+	if x != nil {
+		return x.EventIds
+	}
+	return nil
+}
+
 type DeadEventReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	EventIds      []string               `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -307,15 +323,16 @@ func (*DeadEventReq) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *DeadEventReq) GetEventId() string {
+func (x *DeadEventReq) GetEventIds() []string {
 	if x != nil {
-		return x.EventId
+		return x.EventIds
 	}
-	return ""
+	return nil
 }
 
 type DeadEventResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventIds      []*pb.EventIdWrapper   `protobuf:"bytes,1,rep,name=event_ids,json=eventIds,proto3" json:"event_ids,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -348,6 +365,13 @@ func (x *DeadEventResp) ProtoReflect() protoreflect.Message {
 // Deprecated: Use DeadEventResp.ProtoReflect.Descriptor instead.
 func (*DeadEventResp) Descriptor() ([]byte, []int) {
 	return file_kafka_event_repository_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DeadEventResp) GetEventIds() []*pb.EventIdWrapper {
+	if x != nil {
+		return x.EventIds
+	}
+	return nil
 }
 
 type ReadEventReq struct {
@@ -442,20 +466,23 @@ var File_kafka_event_repository_proto protoreflect.FileDescriptor
 
 const file_kafka_event_repository_proto_rawDesc = "" +
 	"\n" +
-	"\x1ckafka/event_repository.proto\x12\x10event_repository\x1a\vkafka.proto\"4\n" +
-	"\x0eCreateEventReq\x12\"\n" +
-	"\x05event\x18\x01 \x01(\v2\f.kafka.EventR\x05event\",\n" +
-	"\x0fCreateEventResp\x12\x19\n" +
-	"\bevent_id\x18\x01 \x01(\tR\aeventId\"-\n" +
-	"\x10RetryingEventReq\x12\x19\n" +
-	"\bevent_id\x18\x01 \x01(\tR\aeventId\"\x13\n" +
-	"\x11RetryingEventResp\".\n" +
-	"\x11DeliveredEventReq\x12\x19\n" +
-	"\bevent_id\x18\x01 \x01(\tR\aeventId\"\x14\n" +
-	"\x12DeliveredEventResp\")\n" +
-	"\fDeadEventReq\x12\x19\n" +
-	"\bevent_id\x18\x01 \x01(\tR\aeventId\"\x0f\n" +
-	"\rDeadEventResp\"2\n" +
+	"\x1ckafka/event_repository.proto\x12\x10event_repository\x1a\vkafka.proto\"6\n" +
+	"\x0eCreateEventReq\x12$\n" +
+	"\x06events\x18\x01 \x03(\v2\f.kafka.EventR\x06events\"E\n" +
+	"\x0fCreateEventResp\x122\n" +
+	"\tevent_ids\x18\x01 \x03(\v2\x15.kafka.EventIdWrapperR\beventIds\"/\n" +
+	"\x10RetryingEventReq\x12\x1b\n" +
+	"\tevent_ids\x18\x01 \x03(\tR\beventIds\"G\n" +
+	"\x11RetryingEventResp\x122\n" +
+	"\tevent_ids\x18\x01 \x03(\v2\x15.kafka.EventIdWrapperR\beventIds\"0\n" +
+	"\x11DeliveredEventReq\x12\x1b\n" +
+	"\tevent_ids\x18\x01 \x03(\tR\beventIds\"H\n" +
+	"\x12DeliveredEventResp\x122\n" +
+	"\tevent_ids\x18\x01 \x03(\v2\x15.kafka.EventIdWrapperR\beventIds\"+\n" +
+	"\fDeadEventReq\x12\x1b\n" +
+	"\tevent_ids\x18\x01 \x03(\tR\beventIds\"C\n" +
+	"\rDeadEventResp\x122\n" +
+	"\tevent_ids\x18\x01 \x03(\v2\x15.kafka.EventIdWrapperR\beventIds\"2\n" +
 	"\fReadEventReq\x12\"\n" +
 	"\x05query\x18\x01 \x01(\v2\f.kafka.QueryR\x05query\"6\n" +
 	"\rReadEventResp\x12%\n" +
@@ -492,28 +519,33 @@ var file_kafka_event_repository_proto_goTypes = []any{
 	(*ReadEventReq)(nil),       // 8: event_repository.ReadEventReq
 	(*ReadEventResp)(nil),      // 9: event_repository.ReadEventResp
 	(*pb.Event)(nil),           // 10: kafka.Event
-	(*pb.Query)(nil),           // 11: kafka.Query
-	(*pb.Result)(nil),          // 12: kafka.Result
+	(*pb.EventIdWrapper)(nil),  // 11: kafka.EventIdWrapper
+	(*pb.Query)(nil),           // 12: kafka.Query
+	(*pb.Result)(nil),          // 13: kafka.Result
 }
 var file_kafka_event_repository_proto_depIdxs = []int32{
-	10, // 0: event_repository.CreateEventReq.event:type_name -> kafka.Event
-	11, // 1: event_repository.ReadEventReq.query:type_name -> kafka.Query
-	12, // 2: event_repository.ReadEventResp.result:type_name -> kafka.Result
-	0,  // 3: event_repository.EventRepository.CreateEvent:input_type -> event_repository.CreateEventReq
-	2,  // 4: event_repository.EventRepository.RetryingEvent:input_type -> event_repository.RetryingEventReq
-	4,  // 5: event_repository.EventRepository.DeliveredEvent:input_type -> event_repository.DeliveredEventReq
-	6,  // 6: event_repository.EventRepository.DeadEvent:input_type -> event_repository.DeadEventReq
-	8,  // 7: event_repository.EventRepository.ReadEvent:input_type -> event_repository.ReadEventReq
-	1,  // 8: event_repository.EventRepository.CreateEvent:output_type -> event_repository.CreateEventResp
-	3,  // 9: event_repository.EventRepository.RetryingEvent:output_type -> event_repository.RetryingEventResp
-	5,  // 10: event_repository.EventRepository.DeliveredEvent:output_type -> event_repository.DeliveredEventResp
-	7,  // 11: event_repository.EventRepository.DeadEvent:output_type -> event_repository.DeadEventResp
-	9,  // 12: event_repository.EventRepository.ReadEvent:output_type -> event_repository.ReadEventResp
-	8,  // [8:13] is the sub-list for method output_type
-	3,  // [3:8] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	10, // 0: event_repository.CreateEventReq.events:type_name -> kafka.Event
+	11, // 1: event_repository.CreateEventResp.event_ids:type_name -> kafka.EventIdWrapper
+	11, // 2: event_repository.RetryingEventResp.event_ids:type_name -> kafka.EventIdWrapper
+	11, // 3: event_repository.DeliveredEventResp.event_ids:type_name -> kafka.EventIdWrapper
+	11, // 4: event_repository.DeadEventResp.event_ids:type_name -> kafka.EventIdWrapper
+	12, // 5: event_repository.ReadEventReq.query:type_name -> kafka.Query
+	13, // 6: event_repository.ReadEventResp.result:type_name -> kafka.Result
+	0,  // 7: event_repository.EventRepository.CreateEvent:input_type -> event_repository.CreateEventReq
+	2,  // 8: event_repository.EventRepository.RetryingEvent:input_type -> event_repository.RetryingEventReq
+	4,  // 9: event_repository.EventRepository.DeliveredEvent:input_type -> event_repository.DeliveredEventReq
+	6,  // 10: event_repository.EventRepository.DeadEvent:input_type -> event_repository.DeadEventReq
+	8,  // 11: event_repository.EventRepository.ReadEvent:input_type -> event_repository.ReadEventReq
+	1,  // 12: event_repository.EventRepository.CreateEvent:output_type -> event_repository.CreateEventResp
+	3,  // 13: event_repository.EventRepository.RetryingEvent:output_type -> event_repository.RetryingEventResp
+	5,  // 14: event_repository.EventRepository.DeliveredEvent:output_type -> event_repository.DeliveredEventResp
+	7,  // 15: event_repository.EventRepository.DeadEvent:output_type -> event_repository.DeadEventResp
+	9,  // 16: event_repository.EventRepository.ReadEvent:output_type -> event_repository.ReadEventResp
+	12, // [12:17] is the sub-list for method output_type
+	7,  // [7:12] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_kafka_event_repository_proto_init() }
