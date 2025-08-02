@@ -1,4 +1,4 @@
-package app_constant
+package app
 
 import (
 	"log"
