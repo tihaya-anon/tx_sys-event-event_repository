@@ -19,7 +19,7 @@ type DefaultValues struct {
 	Limit   uint64
 }
 
-func BuildQueryFromProto(statement sq.StatementBuilderType, tableName string, dv DefaultValues, q *pb.Query) (*PageQuery, error) {
+func BuildQueryFromProto(statement sq.StatementBuilderType, tableName string, dv *DefaultValues, q *pb.Query) (*PageQuery, error) {
 	// Dynamic WHERE clause
 	statement = addFilter(statement, q.Filters)
 
@@ -105,6 +105,7 @@ func convertFilter(statement sq.StatementBuilderType, f *pb.Query_Filter) sq.Sta
 	return statement
 }
 
+// TODO implement page token
 func decodePageToken(builder sq.SelectBuilder, token string) sq.SelectBuilder {
 	if token == "" {
 		return builder
@@ -115,4 +116,9 @@ func decodePageToken(builder sq.SelectBuilder, token string) sq.SelectBuilder {
 	}
 	builder = builder.Offset(uint64(offset))
 	return builder
+}
+
+// TODO implement page token
+func EncodePageToken(dv *DefaultValues, q *pb.Query) string {
+	return fmt.Sprintf("page_%s", q.PageToken)
 }
