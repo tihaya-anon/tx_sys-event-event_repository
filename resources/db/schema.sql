@@ -18,7 +18,7 @@ CREATE TABLE events (
     retry_count INTEGER DEFAULT 0,
     dedup_key TEXT,
     metadata JSONB,
-    payload BYTEA,
+    payload TEXT, -- Base64 encoded
     target_service TEXT,
     correlation_id TEXT
 );

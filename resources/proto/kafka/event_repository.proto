@@ -3,21 +3,21 @@ package event_repository;
 import "kafka.proto";
 option go_package = "github.com/tihaya-anon/tx_sys-event-event_repository/src/pb/kafka";
 
-message CreateEventReq { kafka.Event event = 1; }
+message CreateEventReq { repeated kafka.Event events = 1; }
 
-message CreateEventResp { string event_id = 1; }
+message CreateEventResp { repeated kafka.EventIdWrapper event_ids = 1; }
 
-message RetryingEventReq { string event_id = 1; }
+message RetryingEventReq { repeated string event_ids = 1; }
 
-message RetryingEventResp {}
+message RetryingEventResp { repeated kafka.EventIdWrapper event_ids = 1; }
 
-message DeliveredEventReq { string event_id = 1; }
+message DeliveredEventReq { repeated string event_ids = 1; }
 
-message DeliveredEventResp {}
+message DeliveredEventResp { repeated kafka.EventIdWrapper event_ids = 1; }
 
-message DeadEventReq { string event_id = 1; }
+message DeadEventReq { repeated string event_ids = 1; }
 
-message DeadEventResp {}
+message DeadEventResp { repeated kafka.EventIdWrapper event_ids = 1; }
 
 message ReadEventReq { kafka.Query query = 1; }
 

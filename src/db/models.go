@@ -67,7 +67,7 @@ type Event struct {
 	RetryCount    pgtype.Int4
 	DedupKey      pgtype.Text
 	Metadata      []byte
-	Payload       []byte
+	Payload       pgtype.Text
 	TargetService pgtype.Text
 	CorrelationID pgtype.Text
 }

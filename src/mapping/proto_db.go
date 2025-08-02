@@ -27,7 +27,7 @@ func DB2PB(e *db.Event) (*pb.Event, error) {
 		RetryCount:    e.RetryCount.Int32,
 		DedupKey:      e.DedupKey.String,
 		Metadata:      metadata,
-		Payload:       e.Payload,
+		Payload:       e.Payload.String,
 		TargetService: e.TargetService.String,
 		CorrelationId: e.CorrelationID.String,
 	}, nil
@@ -57,7 +57,7 @@ func PB2DB(e *pb.Event) (*db.Event, error) {
 		RetryCount:    pgtype.Int4{Int32: e.RetryCount, Valid: true},
 		DedupKey:      pgtype.Text{String: e.DedupKey, Valid: true},
 		Metadata:      metadata,
-		Payload:       e.Payload,
+		Payload:       pgtype.Text{String: e.Payload, Valid: true},
 		TargetService: pgtype.Text{String: e.TargetService, Valid: true},
 		CorrelationID: pgtype.Text{String: e.CorrelationId, Valid: true},
 	}, nil

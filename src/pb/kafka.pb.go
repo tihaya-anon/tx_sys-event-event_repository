@@ -85,7 +85,7 @@ func (x Query_Filter_Operator) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Query_Filter_Operator.Descriptor instead.
 func (Query_Filter_Operator) EnumDescriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{0, 0, 0}
+	return file_kafka_proto_rawDescGZIP(), []int{1, 0, 0}
 }
 
 type Event_DeliveryStatus int32
@@ -140,7 +140,67 @@ func (x Event_DeliveryStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Event_DeliveryStatus.Descriptor instead.
 func (Event_DeliveryStatus) EnumDescriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{2, 0}
+	return file_kafka_proto_rawDescGZIP(), []int{3, 0}
+}
+
+type EventIdWrapper struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	Success       bool                   `protobuf:"varint,2,opt,name=success,proto3" json:"success,omitempty"`
+	Error         string                 `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EventIdWrapper) Reset() {
+	*x = EventIdWrapper{}
+	mi := &file_kafka_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EventIdWrapper) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EventIdWrapper) ProtoMessage() {}
+
+func (x *EventIdWrapper) ProtoReflect() protoreflect.Message {
+	mi := &file_kafka_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EventIdWrapper.ProtoReflect.Descriptor instead.
+func (*EventIdWrapper) Descriptor() ([]byte, []int) {
+	return file_kafka_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *EventIdWrapper) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *EventIdWrapper) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *EventIdWrapper) GetError() string {
+	if x != nil {
+		return x.Error
+	}
+	return ""
 }
 
 type Query struct {
@@ -156,7 +216,7 @@ type Query struct {
 
 func (x *Query) Reset() {
 	*x = Query{}
-	mi := &file_kafka_proto_msgTypes[0]
+	mi := &file_kafka_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -168,7 +228,7 @@ func (x *Query) String() string {
 func (*Query) ProtoMessage() {}
 
 func (x *Query) ProtoReflect() protoreflect.Message {
-	mi := &file_kafka_proto_msgTypes[0]
+	mi := &file_kafka_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -181,7 +241,7 @@ func (x *Query) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Query.ProtoReflect.Descriptor instead.
 func (*Query) Descriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{0}
+	return file_kafka_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Query) GetFilters() []*Query_Filter {
@@ -230,7 +290,7 @@ type Result struct {
 
 func (x *Result) Reset() {
 	*x = Result{}
-	mi := &file_kafka_proto_msgTypes[1]
+	mi := &file_kafka_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -242,7 +302,7 @@ func (x *Result) String() string {
 func (*Result) ProtoMessage() {}
 
 func (x *Result) ProtoReflect() protoreflect.Message {
-	mi := &file_kafka_proto_msgTypes[1]
+	mi := &file_kafka_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -255,7 +315,7 @@ func (x *Result) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Result.ProtoReflect.Descriptor instead.
 func (*Result) Descriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{1}
+	return file_kafka_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *Result) GetEvents() []*Event {
@@ -280,27 +340,28 @@ func (x *Result) GetTotalSize() int64 {
 }
 
 type Event struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
-	EventTopic    string                 `protobuf:"bytes,2,opt,name=event_topic,json=eventTopic,proto3" json:"event_topic,omitempty"`
-	EventType     string                 `protobuf:"bytes,3,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
-	Source        string                 `protobuf:"bytes,4,opt,name=source,proto3" json:"source,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	ExpiresAt     int64                  `protobuf:"varint,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	Status        Event_DeliveryStatus   `protobuf:"varint,7,opt,name=status,proto3,enum=kafka.Event_DeliveryStatus" json:"status,omitempty"`
-	RetryCount    int32                  `protobuf:"varint,8,opt,name=retry_count,json=retryCount,proto3" json:"retry_count,omitempty"`
-	DedupKey      string                 `protobuf:"bytes,9,opt,name=dedup_key,json=dedupKey,proto3" json:"dedup_key,omitempty"`
-	Metadata      map[string]string      `protobuf:"bytes,10,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Payload       []byte                 `protobuf:"bytes,11,opt,name=payload,proto3" json:"payload,omitempty"`
-	TargetService string                 `protobuf:"bytes,12,opt,name=target_service,json=targetService,proto3" json:"target_service,omitempty"` // Filled by router or producer
-	CorrelationId string                 `protobuf:"bytes,13,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"` // For tracing
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	EventId    string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	EventTopic string                 `protobuf:"bytes,2,opt,name=event_topic,json=eventTopic,proto3" json:"event_topic,omitempty"`
+	EventType  string                 `protobuf:"bytes,3,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
+	Source     string                 `protobuf:"bytes,4,opt,name=source,proto3" json:"source,omitempty"`
+	CreatedAt  int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ExpiresAt  int64                  `protobuf:"varint,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	Status     Event_DeliveryStatus   `protobuf:"varint,7,opt,name=status,proto3,enum=kafka.Event_DeliveryStatus" json:"status,omitempty"`
+	RetryCount int32                  `protobuf:"varint,8,opt,name=retry_count,json=retryCount,proto3" json:"retry_count,omitempty"`
+	DedupKey   string                 `protobuf:"bytes,9,opt,name=dedup_key,json=dedupKey,proto3" json:"dedup_key,omitempty"`
+	Metadata   map[string]string      `protobuf:"bytes,10,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // will be transferred as kafka message headers, the value should be
+	// base64 encoded string
+	Payload       string `protobuf:"bytes,11,opt,name=payload,proto3" json:"payload,omitempty"`
+	TargetService string `protobuf:"bytes,12,opt,name=target_service,json=targetService,proto3" json:"target_service,omitempty"` // Filled by router or producer
+	CorrelationId string `protobuf:"bytes,13,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"` // For tracing
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Event) Reset() {
 	*x = Event{}
-	mi := &file_kafka_proto_msgTypes[2]
+	mi := &file_kafka_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -312,7 +373,7 @@ func (x *Event) String() string {
 func (*Event) ProtoMessage() {}
 
 func (x *Event) ProtoReflect() protoreflect.Message {
-	mi := &file_kafka_proto_msgTypes[2]
+	mi := &file_kafka_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -325,7 +386,7 @@ func (x *Event) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Event.ProtoReflect.Descriptor instead.
 func (*Event) Descriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{2}
+	return file_kafka_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Event) GetEventId() string {
@@ -398,11 +459,11 @@ func (x *Event) GetMetadata() map[string]string {
 	return nil
 }
 
-func (x *Event) GetPayload() []byte {
+func (x *Event) GetPayload() string {
 	if x != nil {
 		return x.Payload
 	}
-	return nil
+	return ""
 }
 
 func (x *Event) GetTargetService() string {
@@ -430,7 +491,7 @@ type Query_Filter struct {
 
 func (x *Query_Filter) Reset() {
 	*x = Query_Filter{}
-	mi := &file_kafka_proto_msgTypes[3]
+	mi := &file_kafka_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -442,7 +503,7 @@ func (x *Query_Filter) String() string {
 func (*Query_Filter) ProtoMessage() {}
 
 func (x *Query_Filter) ProtoReflect() protoreflect.Message {
-	mi := &file_kafka_proto_msgTypes[3]
+	mi := &file_kafka_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +516,7 @@ func (x *Query_Filter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Query_Filter.ProtoReflect.Descriptor instead.
 func (*Query_Filter) Descriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{0, 0}
+	return file_kafka_proto_rawDescGZIP(), []int{1, 0}
 }
 
 func (x *Query_Filter) GetField() string {
@@ -489,7 +550,7 @@ type Query_OrderBy struct {
 
 func (x *Query_OrderBy) Reset() {
 	*x = Query_OrderBy{}
-	mi := &file_kafka_proto_msgTypes[4]
+	mi := &file_kafka_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -501,7 +562,7 @@ func (x *Query_OrderBy) String() string {
 func (*Query_OrderBy) ProtoMessage() {}
 
 func (x *Query_OrderBy) ProtoReflect() protoreflect.Message {
-	mi := &file_kafka_proto_msgTypes[4]
+	mi := &file_kafka_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -514,7 +575,7 @@ func (x *Query_OrderBy) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Query_OrderBy.ProtoReflect.Descriptor instead.
 func (*Query_OrderBy) Descriptor() ([]byte, []int) {
-	return file_kafka_proto_rawDescGZIP(), []int{0, 1}
+	return file_kafka_proto_rawDescGZIP(), []int{1, 1}
 }
 
 func (x *Query_OrderBy) GetField() string {
@@ -535,7 +596,11 @@ var File_kafka_proto protoreflect.FileDescriptor
 
 const file_kafka_proto_rawDesc = "" +
 	"\n" +
-	"\vkafka.proto\x12\x05kafka\"\xce\x03\n" +
+	"\vkafka.proto\x12\x05kafka\"[\n" +
+	"\x0eEventIdWrapper\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12\x18\n" +
+	"\asuccess\x18\x02 \x01(\bR\asuccess\x12\x14\n" +
+	"\x05error\x18\x03 \x01(\tR\x05error\"\xce\x03\n" +
 	"\x05Query\x12-\n" +
 	"\afilters\x18\x01 \x03(\v2\x13.kafka.Query.FilterR\afilters\x12#\n" +
 	"\rselect_fields\x18\x02 \x03(\tR\fselectFields\x12/\n" +
@@ -584,7 +649,7 @@ const file_kafka_proto_rawDesc = "" +
 	"\tdedup_key\x18\t \x01(\tR\bdedupKey\x126\n" +
 	"\bmetadata\x18\n" +
 	" \x03(\v2\x1a.kafka.Event.MetadataEntryR\bmetadata\x12\x18\n" +
-	"\apayload\x18\v \x01(\fR\apayload\x12%\n" +
+	"\apayload\x18\v \x01(\tR\apayload\x12%\n" +
 	"\x0etarget_service\x18\f \x01(\tR\rtargetService\x12%\n" +
 	"\x0ecorrelation_id\x18\r \x01(\tR\rcorrelationId\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
@@ -610,23 +675,24 @@ func file_kafka_proto_rawDescGZIP() []byte {
 }
 
 var file_kafka_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_kafka_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_kafka_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_kafka_proto_goTypes = []any{
 	(Query_Filter_Operator)(0), // 0: kafka.Query.Filter.Operator
 	(Event_DeliveryStatus)(0),  // 1: kafka.Event.DeliveryStatus
-	(*Query)(nil),              // 2: kafka.Query
-	(*Result)(nil),             // 3: kafka.Result
-	(*Event)(nil),              // 4: kafka.Event
-	(*Query_Filter)(nil),       // 5: kafka.Query.Filter
-	(*Query_OrderBy)(nil),      // 6: kafka.Query.OrderBy
-	nil,                        // 7: kafka.Event.MetadataEntry
+	(*EventIdWrapper)(nil),     // 2: kafka.EventIdWrapper
+	(*Query)(nil),              // 3: kafka.Query
+	(*Result)(nil),             // 4: kafka.Result
+	(*Event)(nil),              // 5: kafka.Event
+	(*Query_Filter)(nil),       // 6: kafka.Query.Filter
+	(*Query_OrderBy)(nil),      // 7: kafka.Query.OrderBy
+	nil,                        // 8: kafka.Event.MetadataEntry
 }
 var file_kafka_proto_depIdxs = []int32{
-	5, // 0: kafka.Query.filters:type_name -> kafka.Query.Filter
-	6, // 1: kafka.Query.order_by:type_name -> kafka.Query.OrderBy
-	4, // 2: kafka.Result.events:type_name -> kafka.Event
+	6, // 0: kafka.Query.filters:type_name -> kafka.Query.Filter
+	7, // 1: kafka.Query.order_by:type_name -> kafka.Query.OrderBy
+	5, // 2: kafka.Result.events:type_name -> kafka.Event
 	1, // 3: kafka.Event.status:type_name -> kafka.Event.DeliveryStatus
-	7, // 4: kafka.Event.metadata:type_name -> kafka.Event.MetadataEntry
+	8, // 4: kafka.Event.metadata:type_name -> kafka.Event.MetadataEntry
 	0, // 5: kafka.Query.Filter.op:type_name -> kafka.Query.Filter.Operator
 	6, // [6:6] is the sub-list for method output_type
 	6, // [6:6] is the sub-list for method input_type
@@ -646,7 +712,7 @@ func file_kafka_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_kafka_proto_rawDesc), len(file_kafka_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

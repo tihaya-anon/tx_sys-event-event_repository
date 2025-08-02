@@ -1,4 +1,4 @@
-package kafka
+package kafka_constant
 
 const (
 	KAFKA_BRIDGE_JSON   = "application/vnd.kafka.json.v2+json"

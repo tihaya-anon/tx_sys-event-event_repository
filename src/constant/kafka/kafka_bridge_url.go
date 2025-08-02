@@ -1,4 +1,4 @@
-package kafka
+package kafka_constant
 
 import "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/util"
 

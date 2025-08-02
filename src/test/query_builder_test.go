@@ -21,7 +21,7 @@ func Test_QueryBuilder(t *testing.T) {
 	}
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	dv := util.DefaultValues{OrderBy: "create_at DESC", Limit: 100}
+	dv := &util.DefaultValues{OrderBy: "create_at DESC", Limit: 100}
 	pageQuery, err := util.BuildQueryFromProto(psql, "events", dv, query)
 	assert.Equal(t, err, nil)
 	assert.Equal(t, pageQuery.PageSql, "SELECT id, name FROM events WHERE id = $1 AND age < $2 AND name = $3 ORDER BY create_at DESC LIMIT 100")

@@ -92,7 +92,7 @@ func TestIsDup(t *testing.T) {
 				q = tt.setupMock()
 			}
 
-			result, err := util.IsDup(context.Background(), q, tt.dedupKey)
+			event, _, err := util.IsDup(context.Background(), q, tt.dedupKey)
 
 			if tt.expectedError {
 				require.Error(t, err)
@@ -101,7 +101,7 @@ func TestIsDup(t *testing.T) {
 				}
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, tt.expectedEvent, result)
+				assert.Equal(t, tt.expectedEvent, event)
 			}
 		})
 	}
