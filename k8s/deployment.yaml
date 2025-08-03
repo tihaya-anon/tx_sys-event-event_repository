@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: event-repository
+  labels:
+    app: event-repository
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: event-repository
+  template:
+    metadata:
+      labels:
+        app: event-repository
+    spec:
+      containers:
+      - name: event-repository
+        image: event_repository_app:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 50051
+          name: grpc
+        env:
+        - name: APP_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: event-repository-config
+              key: APP_ENV
+        - name: TEST_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: event-repository-db-secrets
+              key: TEST_DB_URL
+        - name: DEV_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: event-repository-db-secrets
+              key: DEV_DB_URL
+        - name: PROD_DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: event-repository-db-secrets
+              key: PROD_DB_URL
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+          initialDelaySeconds: 5
+          periodSeconds: 5

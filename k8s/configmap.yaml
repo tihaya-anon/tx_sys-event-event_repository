@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: event-repository-config
+  labels:
+    app: event-repository
+data:
+  APP_ENV: "prod"
+  # The actual database URLs will be set from secrets

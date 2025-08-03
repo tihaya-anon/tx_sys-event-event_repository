@@ -1,0 +1,57 @@
+## PostgreSQL Custom Values for Event Repository Application
+
+## Global PostgreSQL settings
+global:
+  postgresql:
+    auth:
+      # Database name to create
+      database: "event_repository"
+      # PostgreSQL username
+      username: "event_repo_user"
+      # PostgreSQL password (will be stored in a secret)
+      password: "change-me-in-production"
+      # Enable postgres admin user
+      postgresPassword: "change-me-in-production"
+
+## Authentication parameters
+auth:
+  enablePostgresUser: true
+  # Database name
+  database: "event_repository"
+  # Database user
+  username: "event_repo_user"
+  # Database password
+  password: "change-me-in-production"
+  # Use password files instead of environment variables
+  usePasswordFiles: true
+
+## Primary PostgreSQL configuration
+primary:
+  # Configure persistence for PostgreSQL data
+  persistence:
+    enabled: true
+    # Use dynamic provisioning
+    storageClass: ""
+    size: 8Gi
+  
+  # Configure PostgreSQL service
+  service:
+    type: ClusterIP
+    ports:
+      postgresql: 5432
+
+## Configure resource limits
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 250m
+  limits:
+    memory: 512Mi
+    cpu: 500m
+
+## Disable metrics by default
+metrics:
+  enabled: false
+
+## Architecture: standalone for single instance
+architecture: standalone
