@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: event-repository
+  name: event-repo
   labels:
-    app: event-repository
+    app: event-repo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: event-repository
+      app: event-repo
   template:
     metadata:
       labels:
-        app: event-repository
+        app: event-repo
     spec:
       containers:
-      - name: event-repository
-        image: event_repository_app:latest
+      - name: event-repo
+        image: event_repo:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 50051
@@ -25,22 +25,22 @@ spec:
         - name: APP_ENV
           valueFrom:
             configMapKeyRef:
-              name: event-repository-config
+              name: event-repo-config
               key: APP_ENV
         - name: TEST_DB_URL
           valueFrom:
             secretKeyRef:
-              name: event-repository-db-secrets
+              name: event-repo-db-secrets
               key: TEST_DB_URL
         - name: DEV_DB_URL
           valueFrom:
             secretKeyRef:
-              name: event-repository-db-secrets
+              name: event-repo-db-secrets
               key: DEV_DB_URL
         - name: PROD_DB_URL
           valueFrom:
             secretKeyRef:
-              name: event-repository-db-secrets
+              name: event-repo-db-secrets
               key: PROD_DB_URL
         resources:
           requests:
@@ -51,11 +51,17 @@ spec:
             cpu: "200m"
         livenessProbe:
           exec:
-            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+            command:
+              - grpc-health-probe
+              - -addr=:50051
           initialDelaySeconds: 30
           periodSeconds: 10
+          timeoutSeconds: 5
         readinessProbe:
           exec:
-            command: ["/bin/grpc_health_probe", "-addr=:50051"]
+            command:
+              - grpc-health-probe
+              - -addr=:50051
           initialDelaySeconds: 5
-          periodSeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5

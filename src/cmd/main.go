@@ -17,16 +17,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to create server: %v", err)
 	}
-	go srv.Start()
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- srv.Start()
+	}()
 
 	// Wait for interrupt signal
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	<-sigChan
-	log.Println("Shutting down services...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	srv.Shutdown(ctx)
+	select {
+	case err := <-errChan:
+		if err != nil {
+			log.Fatalf("Server error: %v", err)
+		}
+	case <-sigChan:
+		log.Println("Shutting down services...")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		srv.Shutdown(ctx)
+	}
 }

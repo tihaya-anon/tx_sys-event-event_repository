@@ -6,10 +6,17 @@ cd $SCRIPT_DIR/..
 # Exit on error
 set -e
 
+# Parse command line arguments
+FORCE_REBUILD=false
+DEPLOY_DB=false
+DEPLOY_SRV=false
+DEPLOY_ALL=true  # Default to deploy all if no specific flag is provided
+NAMESPACE="event-repo"  # Default namespace
+
 # Function to check if Docker image exists
 check_and_build_image() {
     local force_rebuild=$1
-    local image_name="event_repository_app"
+    local image_name="event_repo"
     
     # Check if image exists
     if docker image inspect $image_name:latest >/dev/null 2>&1; then
@@ -25,19 +32,16 @@ check_and_build_image() {
     fi
 }
 
-# Parse command line arguments
-FORCE_REBUILD=false
-DEPLOY_DB=false
-DEPLOY_APP=false
-DEPLOY_ALL=true  # Default to deploy all if no specific flag is provided
+
 
 usage() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  --rebuild       Force rebuild of Docker image"
-    echo "  --db            Deploy only PostgreSQL database"
-    echo "  --app           Deploy only application"
-    echo "  --all           Deploy both database and application (default)"
+    echo "  -b, --rebuild       Force rebuild of Docker image"
+    echo "  -d, --db            Deploy only PostgreSQL database"
+    echo "  -s, --srv           Deploy only gRPC server"
+    echo "  -a, --all           Deploy both database and server (default)"
+    echo "  -n, --namespace     Specify Kubernetes namespace (default: event-repo)"
     echo "  -h, --help      Display this help message"
     exit 1
 }
@@ -45,27 +49,35 @@ usage() {
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
-        --rebuild)
+        -b|--rebuild)
         FORCE_REBUILD=true
         shift
         ;;
-        --db)
+        -d|--db)
         DEPLOY_DB=true
-        DEPLOY_APP=false
+        DEPLOY_SRV=false
         DEPLOY_ALL=false
         shift
         ;;
-        --app)
-        DEPLOY_APP=true
+        -s|--srv)
+        DEPLOY_SRV=true
         DEPLOY_DB=false
         DEPLOY_ALL=false
         shift
         ;;
-        --all)
+        -a|--all)
         DEPLOY_ALL=true
         DEPLOY_DB=false
-        DEPLOY_APP=false
+        DEPLOY_SRV=false
         shift
+        ;;
+        -n|--namespace)
+        if [[ -z "$2" ]]; then
+            echo "Error: --namespace requires a value"
+            usage
+        fi
+        NAMESPACE="$2"
+        shift 2
         ;;
         -h|--help)
         usage
@@ -92,6 +104,18 @@ check_kubernetes() {
     fi
 }
 
+# Check if namespace exists and create it if it doesn't
+ensure_namespace() {
+    local namespace=$1
+    if ! kubectl get namespace $namespace > /dev/null 2>&1; then
+        echo "Namespace '$namespace' does not exist. Creating it..."
+        kubectl create namespace $namespace
+        echo "Namespace '$namespace' created successfully."
+    else
+        echo "Namespace '$namespace' already exists."
+    fi
+}
+
 # Deploy to Kubernetes based on selected options
 deploy_to_kubernetes() {
     if ! check_kubernetes; then
@@ -99,32 +123,35 @@ deploy_to_kubernetes() {
         return 1
     fi
     
+    # Ensure namespace exists
+    ensure_namespace $NAMESPACE
+    
     # Deploy PostgreSQL if requested
     if [[ "$DEPLOY_DB" == "true" || "$DEPLOY_ALL" == "true" ]]; then
-        echo "Deploying PostgreSQL using Helm..."
-        helm install postgresql ./pkg/db/postgresql -f ./k8s/custom-values.yaml
+        echo "Deploying PostgreSQL using Helm in namespace $NAMESPACE..."
+        helm install postgresql ./pkg/db/postgresql -f ./k8s/custom-values.yaml --namespace $NAMESPACE
         
         echo "Waiting for PostgreSQL to be ready..."
-        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql --timeout=300s
+        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=postgresql --timeout=300s --namespace $NAMESPACE
         
         echo "PostgreSQL deployment completed successfully!"
     fi
     
-    # Deploy application if requested
-    if [[ "$DEPLOY_APP" == "true" || "$DEPLOY_ALL" == "true" ]]; then
+    # Deploy gRPC server if requested
+    if [[ "$DEPLOY_SRV" == "true" || "$DEPLOY_ALL" == "true" ]]; then
         # Apply Kubernetes manifests
-        echo "Applying application Kubernetes manifests..."
-        kubectl apply -f ./k8s/configmap.yaml
-        kubectl apply -f ./k8s/secrets.yaml
-        kubectl apply -f ./k8s/deployment.yaml
-        kubectl apply -f ./k8s/service.yaml
+        echo "Applying gRPC server Kubernetes manifests in namespace $NAMESPACE..."
+        kubectl apply -f ./k8s/configmap.yaml --namespace $NAMESPACE
+        kubectl apply -f ./k8s/secrets.yaml --namespace $NAMESPACE
+        kubectl apply -f ./k8s/deployment.yaml --namespace $NAMESPACE
+        kubectl apply -f ./k8s/service.yaml --namespace $NAMESPACE
         
-        echo "Waiting for Event Repository application to be ready..."
-        kubectl wait --for=condition=ready pod -l app=event-repository --timeout=300s
+        echo "Waiting for gRPC server to be ready..."
+        kubectl wait --for=condition=ready pod -l app=event-repo --timeout=300s --namespace $NAMESPACE
         
-        echo "Application deployment completed successfully!"
-        echo "You can access the gRPC application using the following command:"
-        echo "  kubectl port-forward svc/event-repository 50051:50051"
+        echo "gRPC server deployment completed successfully!"
+        echo "You can access the gRPC server using the following command:"
+        echo "  kubectl port-forward svc/event-repo 50051:50051 -n $NAMESPACE"
         echo "Then use a gRPC client to connect to localhost:50051"
     fi
     
