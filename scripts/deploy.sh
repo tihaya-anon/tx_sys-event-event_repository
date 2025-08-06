@@ -19,6 +19,7 @@ check_and_build_image() {
     local image_name="event_repo"
     
     # Check if image exists
+    eval $(minikube docker-env)
     if docker image inspect $image_name:latest >/dev/null 2>&1; then
         if [ "$force_rebuild" = "true" ]; then
             echo "Image $image_name exists, but force rebuild requested..."
@@ -150,6 +151,8 @@ deploy_to_kubernetes() {
         kubectl wait --for=condition=ready pod -l app=event-repo --timeout=300s --namespace $NAMESPACE
         
         echo "gRPC server deployment completed successfully!"
+        echo "logs: "
+        kubectl logs -l app=event-repo -n $NAMESPACE
         echo "You can access the gRPC server using the following command:"
         echo "  kubectl port-forward svc/event-repo 50051:50051 -n $NAMESPACE"
         echo "Then use a gRPC client to connect to localhost:50051"

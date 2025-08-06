@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -14,6 +15,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 )
 
 type Server struct {
@@ -36,7 +38,11 @@ func NewServer(port int) (*Server, error) {
 	q := db.New(pool)
 	r := dao_impl.NewReader(pool)
 	s := grpc.NewServer()
-	kafka.RegisterEventRepositoryServer(s, NewGrpcHandler(q, r))
+	handler := NewGrpcHandler(q, r)
+	if handler == nil {
+		return nil, errors.New("failed to create handler")
+	}
+	kafka.RegisterEventRepositoryServer(s, handler)
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(s, healthServer)
 	return &Server{grpcServer: s, listener: lis, pool: pool, healthServer: healthServer, healthCheckService: "grpc.health.v1.Health"}, nil
@@ -45,7 +51,17 @@ func NewServer(port int) (*Server, error) {
 func (s *Server) Start() error {
 	log.Printf("gRPC server listening at %s", s.listener.Addr())
 	s.healthServer.SetServingStatus(s.healthCheckService, healthpb.HealthCheckResponse_SERVING)
+	reflection.Register(s.grpcServer)
+	services := s.grpcServer.GetServiceInfo()
+	if len(services) == 0 {
+		return errors.New("no gRPC services registered")
+	} else {
+		for name := range services {
+			log.Printf("Registered service: %s", name)
+		}
+	}
 	if err := s.grpcServer.Serve(s.listener); err != nil {
+		s.healthServer.SetServingStatus(s.healthCheckService, healthpb.HealthCheckResponse_NOT_SERVING)
 		return err
 	}
 	return nil
