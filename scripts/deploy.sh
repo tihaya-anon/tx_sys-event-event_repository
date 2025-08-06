@@ -23,13 +23,13 @@ check_and_build_image() {
     if docker image inspect $image_name:latest >/dev/null 2>&1; then
         if [ "$force_rebuild" = "true" ]; then
             echo "Image $image_name exists, but force rebuild requested..."
-            ./scripts/docker_build.sh
+            ./scripts/build_img.sh
         else
             echo "Image $image_name already exists, skipping build..."
         fi
     else
         echo "Image $image_name does not exist, building..."
-        ./scripts/docker_build.sh
+        ./scripts/build_img.sh
     fi
 }
 
@@ -43,7 +43,8 @@ usage() {
     echo "  -s, --srv           Deploy only gRPC server"
     echo "  -a, --all           Deploy both database and server (default)"
     echo "  -n, --namespace     Specify Kubernetes namespace (default: event-repo)"
-    echo "  -h, --help      Display this help message"
+    echo "  -f, --forward       Forward gRPC server port to local machine"
+    echo "  -h, --help          Display this help message"
     exit 1
 }
 
@@ -79,6 +80,10 @@ while [[ $# -gt 0 ]]; do
         fi
         NAMESPACE="$2"
         shift 2
+        ;;
+        -f|--forward)
+        FORWARD=true
+        shift
         ;;
         -h|--help)
         usage
@@ -153,10 +158,13 @@ deploy_to_kubernetes() {
         echo "gRPC server deployment completed successfully!"
         echo "logs: "
         kubectl logs -l app=event-repo -n $NAMESPACE
-        echo "You can access the gRPC server using the following command:"
-        echo "  kubectl port-forward svc/event-repo 50051:50051 -n $NAMESPACE"
-        echo "Then use a gRPC client to connect to localhost:50051"
-    fi
+        if [[ "$FORWARD" == "true" ]]; then
+            kubectl port-forward svc/event-repo 50051:50051 -n $NAMESPACE
+        else
+            echo "You can access the gRPC server using the following command:"
+            echo "  kubectl port-forward svc/event-repo 50051:50051 -n $NAMESPACE"
+            echo "Then use a gRPC client to connect to localhost:50051"
+        fi
     
     echo "Deployment process completed."
     return 0

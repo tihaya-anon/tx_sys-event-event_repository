@@ -1,6 +1,7 @@
 package postgre
 
 import (
+	"github.com/rs/zerolog/log"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/util"
 )
 
@@ -23,4 +24,5 @@ func Init(appEnv string) {
 	default:
 		DB_URL = util.MustGetEnv(TEST_DB_URL_NAME)
 	}
+	log.Info().Msgf("DB_URL `%s`", DB_URL)
 }

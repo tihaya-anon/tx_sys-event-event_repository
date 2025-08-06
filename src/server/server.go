@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	constant_postgre "github.com/tihaya-anon/tx_sys-event-event_repository/src/constant/postgre"
+	"github.com/rs/zerolog/log"
+	"github.com/tihaya-anon/tx_sys-event-event_repository/src/constant"
 	dao_impl "github.com/tihaya-anon/tx_sys-event-event_repository/src/dao/impl"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb/kafka"
@@ -29,10 +29,12 @@ type Server struct {
 func NewServer(port int) (*Server, error) {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
+		log.Error().Err(err).Msg("failed to listen")
 		return nil, err
 	}
-	pool, err := pgxpool.New(context.Background(), constant_postgre.DB_URL)
+	pool, err := pgxpool.New(context.Background(), constant.DB_URL)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create pool")
 		return nil, err
 	}
 	q := db.New(pool)
@@ -40,6 +42,7 @@ func NewServer(port int) (*Server, error) {
 	s := grpc.NewServer()
 	handler := NewGrpcHandler(q, r)
 	if handler == nil {
+		log.Error().Err(err).Msg("failed to create handler")
 		return nil, errors.New("failed to create handler")
 	}
 	kafka.RegisterEventRepositoryServer(s, handler)
@@ -49,15 +52,16 @@ func NewServer(port int) (*Server, error) {
 }
 
 func (s *Server) Start() error {
-	log.Printf("gRPC server listening at %s", s.listener.Addr())
+	log.Info().Msgf("gRPC server listening at %s", s.listener.Addr())
 	s.healthServer.SetServingStatus(s.healthCheckService, healthpb.HealthCheckResponse_SERVING)
 	reflection.Register(s.grpcServer)
 	services := s.grpcServer.GetServiceInfo()
 	if len(services) == 0 {
-		return errors.New("no gRPC services registered")
+		log.Error().Msg("no gRPC services registered")
+		return errors.New("server error")
 	} else {
 		for name := range services {
-			log.Printf("Registered service: %s", name)
+			log.Info().Msgf("Registered service: %s", name)
 		}
 	}
 	if err := s.grpcServer.Serve(s.listener); err != nil {
@@ -79,9 +83,9 @@ func (s *Server) Shutdown(ctx context.Context) {
 
 	select {
 	case <-done:
-		log.Println("gRPC server shutdown gracefully")
+		log.Info().Msg("gRPC server shutdown gracefully")
 	case <-ctx.Done():
-		log.Println("gRPC server shutdown timeout, forcing stop")
+		log.Info().Msg("gRPC server shutdown timeout, forcing stop")
 		s.grpcServer.Stop()
 	}
 

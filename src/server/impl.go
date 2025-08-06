@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/rs/zerolog/log"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/dao"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/db"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/pb"
@@ -69,6 +70,7 @@ func (s *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEv
 		if filterHasEventId(f) {
 			event, err := s.readEventByEventId(ctx, f.Values[0])
 			if err != nil {
+				log.Error().Err(err).Msg("failed to read event by event id")
 				return nil, err
 			}
 			return &kafka.ReadEventResp{Result: &pb.Result{Events: []*pb.Event{event}}}, nil
@@ -80,18 +82,22 @@ func (s *EventRepositoryServer) ReadEvent(ctx context.Context, req *kafka.ReadEv
 	dv := &util.DefaultValues{OrderBy: "create_at DESC", Limit: 100}
 	pageQuery, err := util.BuildQueryFromProto(psql, tableName, dv, req.Query)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to build query from proto")
 		return nil, err
 	}
 	dbEvents, err := s.r.Select(ctx, pageQuery.PageSql, pageQuery.PageArgs...)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to select events")
 		return nil, err
 	}
 	totalSize, err := s.r.Count(ctx, pageQuery.TotalSql, pageQuery.TotalArgs...)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to count events")
 		return nil, err
 	}
 	pbEvents, err := paraMapping(dbEvents)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to convert db events to pb events")
 		return nil, err
 	}
 	nextPageToken := util.EncodePageToken(dv, req.Query)

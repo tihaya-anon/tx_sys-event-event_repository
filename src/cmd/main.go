@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/tihaya-anon/tx_sys-event-event_repository/src/server"
 )
 
@@ -15,7 +15,7 @@ func main() {
 	// Initialize server
 	srv, err := server.NewServer(50051)
 	if err != nil {
-		log.Fatalf("failed to create server: %v", err)
+		os.Exit(1)
 	}
 	errChan := make(chan error, 1)
 	go func() {
@@ -29,10 +29,10 @@ func main() {
 	select {
 	case err := <-errChan:
 		if err != nil {
-			log.Fatalf("Server error: %v", err)
+			os.Exit(1)
 		}
 	case <-sigChan:
-		log.Println("Shutting down services...")
+		log.Info().Msg("Shutting down services...")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		srv.Shutdown(ctx)
