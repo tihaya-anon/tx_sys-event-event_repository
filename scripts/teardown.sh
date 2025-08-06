@@ -107,6 +107,7 @@ teardown_kubernetes() {
         kubectl delete -f ./k8s/deployment.yaml --ignore-not-found=true --namespace $NAMESPACE
         kubectl delete -f ./k8s/secrets.yaml --ignore-not-found=true --namespace $NAMESPACE
         kubectl delete -f ./k8s/configmap.yaml --ignore-not-found=true --namespace $NAMESPACE
+        kubectl delete -f ./k8s/schema-configmap.yaml --ignore-not-found=true --namespace $NAMESPACE
         
         echo "gRPC server teardown completed successfully!"
     fi

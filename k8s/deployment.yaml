@@ -14,6 +14,33 @@ spec:
       labels:
         app: event-repo
     spec:
+      initContainers:
+      - name: init-db-schema
+        image: postgres:14-alpine
+        command: ['sh', '-c', 
+          'until pg_isready -h postgresql.event-repo.svc.cluster.local -p 5432; do echo waiting for database; sleep 2; done; 
+          echo applying database schema; 
+          PGPASSWORD=$DB_PASSWORD psql -h postgresql.event-repo.svc.cluster.local -U $DB_USER -d $DB_NAME -f /schema/schema.sql -v ON_ERROR_STOP=1;
+          echo schema applied successfully']
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: event-repo-db-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: event-repo-db-secrets
+              key: DB_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: event-repo-db-secrets
+              key: DB_NAME
+        volumeMounts:
+        - name: schema-volume
+          mountPath: /schema
       containers:
       - name: event-repo
         image: event_repo:latest
@@ -65,3 +92,7 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
+      volumes:
+      - name: schema-volume
+        configMap:
+          name: event-repo-schema

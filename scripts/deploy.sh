@@ -147,6 +147,7 @@ deploy_to_kubernetes() {
     if [[ "$DEPLOY_SRV" == "true" || "$DEPLOY_ALL" == "true" ]]; then
         # Apply Kubernetes manifests
         echo "Applying gRPC server Kubernetes manifests in namespace $NAMESPACE..."
+        kubectl apply -f ./k8s/schema-configmap.yaml --namespace $NAMESPACE
         kubectl apply -f ./k8s/configmap.yaml --namespace $NAMESPACE
         kubectl apply -f ./k8s/secrets.yaml --namespace $NAMESPACE
         kubectl apply -f ./k8s/deployment.yaml --namespace $NAMESPACE
@@ -165,7 +166,7 @@ deploy_to_kubernetes() {
             echo "  kubectl port-forward svc/event-repo 50051:50051 -n $NAMESPACE"
             echo "Then use a gRPC client to connect to localhost:50051"
         fi
-    
+    fi
     echo "Deployment process completed."
     return 0
 }
